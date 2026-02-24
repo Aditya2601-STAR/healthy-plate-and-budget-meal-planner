@@ -339,6 +339,93 @@
             .planner-layout {
                 grid-template-columns: 1fr;
             }
+
+            .planner-panel {
+                display: none;
+                /* Hide all panels initially on mobile */
+            }
+
+            .planner-panel.active-panel {
+                display: block;
+                /* Only show active one */
+            }
+
+            .planner-right {
+                display: contents;
+                /* Let children follow panel rules */
+            }
+        }
+
+        /* ===== MOBILE VIEW SWITCHER ===== */
+        .mobile-switcher {
+            display: none;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: .5rem;
+            margin-bottom: 1rem;
+            position: sticky;
+            top: 70px;
+            z-index: 90;
+            background: var(--bg);
+            padding: .5rem 0;
+        }
+
+        @media(max-width:750px) {
+            .mobile-switcher {
+                display: grid;
+            }
+        }
+
+        .switch-btn {
+            padding: .8rem;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            background: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: .8rem;
+            transition: .2s;
+        }
+
+        .switch-btn.active {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+        }
+
+        /* ===== FLOATING SUMMARY ===== */
+        .floating-summary {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: .8rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            display: none;
+            gap: 1.5rem;
+            z-index: 1000;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            white-space: nowrap;
+        }
+
+        @media(max-width:750px) {
+            .floating-summary {
+                display: flex;
+            }
+        }
+
+        .float-item {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            font-weight: 800;
+            font-size: .9rem;
+        }
+
+        .float-item span {
+            color: var(--green);
         }
 
         /* ===== MEAL TABS ===== */
@@ -1553,8 +1640,15 @@
         <div class="container">
             <h2 class="section-title">🍽 Virtual Meal Planner</h2>
             <p class="section-sub">Select food items, set your budget, and see your nutrition summary instantly</p>
+
+            <div class="mobile-switcher">
+                <button class="switch-btn active" id="btn-view-food" onclick="switchView('food')">📋 Food</button>
+                <button class="switch-btn" id="btn-view-price" onclick="switchView('price')">📊 Prices</button>
+                <button class="switch-btn" id="btn-view-plate" onclick="switchView('plate')">🍽 Plate</button>
+            </div>
+
             <div class="planner-layout">
-                <div class="planner-panel">
+                <div class="planner-panel active-panel" id="panel-food">
                     <h3>📋 Food Database</h3>
                     <div class="meal-tabs">
                         <button class="meal-tab active" id="tab-breakfast" onclick="switchMeal('breakfast')">🌅
@@ -1569,7 +1663,7 @@
                     </div>
                     <div class="food-list" id="foodList"></div>
                 </div>
-                <div class="planner-panel price-panel">
+                <div class="planner-panel price-panel" id="panel-price">
                     <h3>📊 Live Price Check</h3>
                     <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 1rem;">Real Indian market prices
                         via Agmarknet</p>
@@ -1581,7 +1675,7 @@
                     <div id="priceResults" class="price-results" style="max-height: 500px; overflow-y: auto;"></div>
                 </div>
 
-                <div class="planner-right">
+                <div class="planner-right" id="panel-plate">
                     <div class="planner-panel" style="margin-bottom:1.5rem;">
                         <h3>🪣 Your Budget</h3>
                         <div class="budget-row">
@@ -1634,6 +1728,12 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- ===== FLOATING SUMMARY (Mobile Only) ===== -->
+        <div class="floating-summary" id="floatingSummary">
+            <div class="float-item">💰 <span id="floatCost">₹0</span></div>
+            <div class="float-item">🔥 <span id="floatCal">0</span></div>
+            <div class="float-item">🥩 <span id="floatPro">0g</span></div>
         </div>
     </section>
 
@@ -1971,7 +2071,20 @@
             // Filter and Re-render
             filterFood(document.getElementById('searchBox').value || '');
             renderPlate();
-            updateTotals();
+            updateTotals(); // Refresh summary bar
+        }
+
+        function switchView(view) {
+            // Panel visibility
+            document.querySelectorAll('.planner-panel, .planner-right').forEach(p => p.classList.remove('active-panel'));
+            document.getElementById(`panel-${view}`).classList.add('active-panel');
+
+            // Button active state
+            document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-view-${view}`).classList.add('active');
+
+            // Scroll to top of planner section to ensure user sees the content
+            document.getElementById('planner').scrollIntoView({ behavior: 'smooth' });
         }
 
         function filterFood(query) {
@@ -2147,6 +2260,14 @@
             el.innerHTML = plate.map((f, i) => `<div class="plate-tag">${f.name} <button onclick="removeFood(${i})">×</button></div>`).join('');
         }
 
+        // Helper to update progress bars with colors
+        function updateBar(id, percent, color) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.width = Math.min(100, percent) + '%';
+            el.style.background = color;
+        }
+
         function updateTotals() {
             const budget = parseFloat(document.getElementById('budgetInput').value) || 0;
             // Free staples (Roti, Dal, Rice, Sabzi) are excluded from cost
@@ -2169,8 +2290,26 @@
             document.getElementById('barCarb').style.width = pct(totalCarb, 100) + '%';
             document.getElementById('valCal').textContent = totalCal + ' kcal';
             document.getElementById('valPro').textContent = totalPro + ' g';
-            document.getElementById('valFat').textContent = totalFat + ' g';
-            document.getElementById('valCarb').textContent = totalCarb + ' g';
+            document.getElementById('valFat').textContent = `${Math.round(totalFat)} g`;
+            document.getElementById('valCarb').textContent = `${Math.round(totalCarb)} g`;
+
+            // Update bars
+            const proteinTarget = Math.round(userPrefs.weight * (userPrefs.goal === 'gain' ? 2.0 : userPrefs.goal === 'lose' ? 1.4 : 1.6));
+            updateBar('barCal', (totalCal / 1000) * 100, totalCal > 1000 ? 'var(--orange)' : 'var(--green)');
+            updateBar('barPro', (totalPro / proteinTarget) * 100, totalPro < proteinTarget ? 'var(--orange)' : 'var(--green)');
+            updateBar('barFat', (totalFat / 70) * 100, totalFat > 70 ? 'var(--orange)' : 'var(--green)');
+            updateBar('barCarb', (totalCarb / 250) * 100, totalCarb > 250 ? 'var(--orange)' : 'var(--green)');
+
+            // Floating Summary Update
+            document.getElementById('floatCost').innerText = `₹${totalCost}`;
+            document.getElementById('floatCal').innerText = Math.round(totalCal);
+            document.getElementById('floatPro').innerText = `${Math.round(totalPro)}g`;
+
+            if (totalCost > budget) {
+                document.getElementById('floatCost').classList.add('warn');
+            } else {
+                document.getElementById('floatCost').classList.remove('warn');
+            }
 
             const suggBox = document.getElementById('suggBox');
             const suggestions = [];
