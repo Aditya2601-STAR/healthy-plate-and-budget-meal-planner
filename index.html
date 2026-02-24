@@ -2361,6 +2361,8 @@
             const tCost = plate.filter(f => !f.free).reduce((s, f) => s + f.price, 0);
             const tCal = plate.reduce((s, f) => s + (f.cal || 0), 0);
             const tPro = plate.reduce((s, f) => s + (f.pro || 0), 0);
+            const tFat = plate.reduce((s, f) => s + (f.fat || 0), 0);
+            const tCarb = plate.reduce((s, f) => s + (f.carb || 0), 0);
             const rem = budget - tCost;
 
             document.getElementById('totalCost').innerText = `₹${tCost}`;
@@ -2371,8 +2373,12 @@
             const pTarget = Math.round(userPrefs.weight * (userPrefs.goal === 'gain' ? 2.0 : 1.6));
             updateBar('barCal', (tCal / 1000) * 100, tCal > 1000 ? 'var(--orange)' : 'var(--green)');
             updateBar('barPro', (tPro / pTarget) * 100, tPro < pTarget ? 'var(--orange)' : 'var(--green)');
-            document.getElementById('valCal').innerText = tCal + ' kcal';
-            document.getElementById('valPro').innerText = tPro + ' g';
+            updateBar('barFat', (tFat / 80) * 100, tFat > 80 ? 'var(--red)' : 'var(--red)');
+            updateBar('barCarb', (tCarb / 300) * 100, tCarb > 300 ? 'var(--orange)' : 'var(--green-mid)');
+            document.getElementById('valCal').innerText = Math.round(tCal) + ' kcal';
+            document.getElementById('valPro').innerText = Math.round(tPro * 10) / 10 + ' g';
+            document.getElementById('valFat').innerText = Math.round(tFat * 10) / 10 + ' g';
+            document.getElementById('valCarb').innerText = Math.round(tCarb * 10) / 10 + ' g';
 
             document.getElementById('floatCost').innerText = `₹${tCost}`;
             document.getElementById('floatCal').innerText = Math.round(tCal);
