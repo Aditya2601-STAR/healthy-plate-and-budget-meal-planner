@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Health Plate - Budget Meal Planner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <header>
+        <div class="logo">🍽 Health Plate</div>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">How It Works</a>
+            <a href="#">About</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Smart Meal Planning for Students</h1>
+        <p>Balance Protein. Control Budget. Stay Healthy.</p>
+        <button onclick="showStep(1)">Start Planning</button>
+    </section>
+
+    <!-- Step 1: Weight -->
+    <section class="form-section" id="step1">
+        <h2>Step 1: Enter Your Weight</h2>
+        <input type="number" placeholder="Enter weight in kg" id="weight">
+        <button onclick="showStep(2)">Next</button>
+    </section>
+
+    <!-- Step 2: Goal -->
+    <section class="form-section" id="step2">
+        <h2>Step 2: Select Your Goal</h2>
+
+        <div class="goal-options">
+            <div class="goal-card" onclick="selectGoal('gain')">Gain Weight</div>
+            <div class="goal-card" onclick="selectGoal('maintain')">Maintain</div>
+            <div class="goal-card" onclick="selectGoal('lose')">Lose Weight</div>
+        </div>
+
+        <button onclick="showStep(3)">Next</button>
+    </section>
+
+    <!-- Step 3: Budget & Diet -->
+    <section class="form-section" id="step3">
+        <h2>Step 3: Budget & Diet</h2>
+
+        <input type="number" placeholder="Daily Budget (₹)" id="budget">
+
+        <div class="diet-options">
+            <label><input type="radio" name="diet" value="veg"> Veg</label>
+            <label><input type="radio" name="diet" value="eggetarian"> Eggetarian</label>
+            <label><input type="radio" name="diet" value="nonveg"> Non-Veg</label>
+        </div>
+
+        <button onclick="generatePlan()">Generate Plan</button>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results" id="results">
+        <h2>Your Personalized Plan</h2>
+
+        <div class="summary">
+            <p><strong>Weight:</strong> <span id="resultWeight"></span> kg</p>
+            <p><strong>Goal:</strong> <span id="resultGoal"></span></p>
+            <p><strong>Required Protein:</strong> <span id="resultProtein"></span> g</p>
+        </div>
+
+        <div class="base-meal">
+            <h3>Base Indian Meal</h3>
+            <ul>
+                <li>Dal (1 cup)</li>
+                <li>Rice (1 cup)</li>
+                <li>Chapati (2)</li>
+                <li>Sabzi</li>
+            </ul>
+        </div>
+
+        <div class="suggestions">
+            <h3>Suggested Add-ons</h3>
+            <ul id="addonList">
+                <!-- JS will insert suggestions here -->
+            </ul>
+        </div>
+
+    </section>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
