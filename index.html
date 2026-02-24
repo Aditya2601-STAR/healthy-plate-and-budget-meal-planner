@@ -537,6 +537,107 @@
             font-weight: 700;
         }
 
+        /* ===== RECOMMENDATION OVERLAY ===== */
+        .reco-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .reco-overlay.active {
+            display: flex;
+        }
+
+        .reco-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-width: 1000px;
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        @media(max-width:850px) {
+            .reco-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .reco-card {
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: .3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: .8rem;
+        }
+
+        .reco-card:hover {
+            border-color: var(--green);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .reco-card.best {
+            border-color: var(--green);
+            background: #f0fdf4;
+        }
+
+        .reco-tag {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--green);
+            color: #fff;
+            padding: .2rem .8rem;
+            border-radius: 20px;
+            font-size: .7rem;
+            font-weight: 800;
+        }
+
+        .reco-card h4 {
+            font-size: 1.2rem;
+            color: var(--green);
+            font-weight: 800;
+        }
+
+        .reco-items {
+            font-size: .85rem;
+            color: var(--gray);
+            list-style: none;
+            padding: 0;
+        }
+
+        .reco-items li {
+            margin-bottom: .3rem;
+        }
+
+        .reco-stats {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 800;
+            font-size: .9rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #e5e7eb;
+        }
+
         .add-btn {
             background: var(--orange);
             color: #fff;
@@ -1641,101 +1742,119 @@
             <h2 class="section-title">🍽 Virtual Meal Planner</h2>
             <p class="section-sub">Select food items, set your budget, and see your nutrition summary instantly</p>
 
-            <div class="mobile-switcher">
-                <button class="switch-btn active" id="btn-view-food" onclick="switchView('food')">📋 Food</button>
-                <button class="switch-btn" id="btn-view-price" onclick="switchView('price')">📊 Prices</button>
-                <button class="switch-btn" id="btn-view-plate" onclick="switchView('plate')">🍽 Plate</button>
-            </div>
-
-            <div class="planner-layout">
-                <div class="planner-panel active-panel" id="panel-food">
-                    <h3>📋 Food Database</h3>
-                    <div class="meal-tabs">
-                        <button class="meal-tab active" id="tab-breakfast" onclick="switchMeal('breakfast')">🌅
-                            Breakfast</button>
-                        <button class="meal-tab" id="tab-lunch" onclick="switchMeal('lunch')">☀️ Lunch</button>
-                        <button class="meal-tab" id="tab-dinner" onclick="switchMeal('dinner')">🌙 Dinner</button>
-                    </div>
-                    <div style="margin-bottom:1rem;">
-                        <input type="text" id="searchBox" placeholder="Search food item..."
-                            style="width:100%;border:2px solid #d1fae5;border-radius:10px;padding:.5rem .8rem;font-family:'Nunito',sans-serif;font-size:.95rem;outline:none;"
-                            oninput="filterFood(this.value)" />
-                    </div>
-                    <div class="food-list" id="foodList"></div>
-                </div>
-                <div class="planner-panel price-panel" id="panel-price">
-                    <h3>📊 Live Price Check</h3>
-                    <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 1rem;">Real Indian market prices
-                        via Agmarknet</p>
-                    <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
-                        <input type="text" id="priceQuery" placeholder="e.g. dal, paneer..."
-                            style="flex:1; border:2px solid #d1fae5; border-radius:10px; padding:.5rem .8rem; font-family:'Nunito',sans-serif; font-size:.95rem; outline:none;" />
-                        <button onclick="searchPrice()" class="add-btn" style="padding: 0.5rem 1rem;">Check</button>
-                    </div>
-                    <div id="priceResults" class="price-results" style="max-height: 500px; overflow-y: auto;"></div>
+            <div id="plannerContent" style="display:none;">
+                <div class="mobile-switcher">
+                    <button class="switch-btn active" id="btn-view-food" onclick="switchView('food')">📋 Food</button>
+                    <button class="switch-btn" id="btn-view-price" onclick="switchView('price')">📊 Prices</button>
+                    <button class="switch-btn" id="btn-view-plate" onclick="switchView('plate')">🍽 Plate</button>
                 </div>
 
-                <div class="planner-right" id="panel-plate">
-                    <div class="planner-panel" style="margin-bottom:1.5rem;">
-                        <h3>🪣 Your Budget</h3>
-                        <div class="budget-row">
-                            <label>₹</label>
-                            <input type="number" id="budgetInput" placeholder="Enter budget (e.g. 80)" value="100"
-                                min="0" oninput="updateTotals()" />
-                            <span style="font-size:.85rem;color:var(--gray);">per meal</span>
+                <div class="planner-layout">
+                    <div class="planner-panel active-panel" id="panel-food">
+                        <h3>📋 Food Database</h3>
+                        <div class="meal-tabs">
+                            <button class="meal-tab active" id="tab-breakfast" onclick="switchMeal('breakfast')">🌅
+                                Breakfast</button>
+                            <button class="meal-tab" id="tab-lunch" onclick="switchMeal('lunch')">☀️ Lunch</button>
+                            <button class="meal-tab" id="tab-dinner" onclick="switchMeal('dinner')">🌙 Dinner</button>
                         </div>
-                        <h3>🍽 Your Plate</h3>
-                        <div class="plate-display" id="plateDisplay" style="max-height: 250px; overflow-y: auto;">
-                            <div class="empty-plate">🫙<br />No items added yet.<br />Select from the food database!
-                            </div>
+                        <div style="margin-bottom:1rem;">
+                            <input type="text" id="searchBox" placeholder="Search food item..."
+                                style="width:100%;border:2px solid #d1fae5;border-radius:10px;padding:.5rem .8rem;font-family:'Nunito',sans-serif;font-size:.95rem;outline:none;"
+                                oninput="filterFood(this.value)" />
                         </div>
-                        <div class="totals-grid">
-                            <div class="total-box">
-                                <div class="lbl">Total Cost</div>
-                                <div class="val" id="totalCost">₹0</div>
-                            </div>
-                            <div class="total-box">
-                                <div class="lbl">Remaining</div>
-                                <div class="val" id="remaining">₹100</div>
-                            </div>
-                        </div>
+                        <div class="food-list" id="foodList"></div>
                     </div>
-                    <div class="planner-panel">
-                        <h3>🔬 Nutrition Summary</h3>
-                        <div class="nutrition-summary">
-                            <div class="nut-row"><span class="nut-label">Calories</span>
-                                <div class="nut-bar-bg">
-                                    <div class="nut-bar bar-cal" id="barCal" style="width:0%"></div>
-                                </div><span class="nut-val" id="valCal">0 kcal</span>
+                    <div class="planner-panel price-panel" id="panel-price">
+                        <h3>📊 Live Price Check</h3>
+                        <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 1rem;">Real Indian market
+                            prices
+                            via Agmarknet</p>
+                        <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+                            <input type="text" id="priceQuery" placeholder="e.g. dal, paneer..."
+                                style="flex:1; border:2px solid #d1fae5; border-radius:10px; padding:.5rem .8rem; font-family:'Nunito',sans-serif; font-size:.95rem; outline:none;" />
+                            <button onclick="searchPrice()" class="add-btn" style="padding: 0.5rem 1rem;">Check</button>
+                        </div>
+                        <div id="priceResults" class="price-results" style="max-height: 500px; overflow-y: auto;"></div>
+                    </div>
+
+                    <div class="planner-right" id="panel-plate">
+                        <div class="planner-panel" style="margin-bottom:1.5rem;">
+                            <h3>🪣 Your Budget</h3>
+                            <div class="budget-row">
+                                <label>₹</label>
+                                <input type="number" id="budgetInput" placeholder="Enter budget (e.g. 80)" value="100"
+                                    min="0" oninput="updateTotals()" />
+                                <span style="font-size:.85rem;color:var(--gray);">per meal</span>
                             </div>
-                            <div class="nut-row"><span class="nut-label">Protein</span>
-                                <div class="nut-bar-bg">
-                                    <div class="nut-bar bar-pro" id="barPro" style="width:0%"></div>
-                                </div><span class="nut-val" id="valPro">0 g</span>
+                            <h3>🍽 Your Plate</h3>
+                            <div class="plate-display" id="plateDisplay" style="max-height: 250px; overflow-y: auto;">
+                                <div class="empty-plate">🫙<br />No items added yet.<br />Select from the food database!
+                                </div>
                             </div>
-                            <div class="nut-row"><span class="nut-label">Fat</span>
-                                <div class="nut-bar-bg">
-                                    <div class="nut-bar bar-fat" id="barFat" style="width:0%"></div>
-                                </div><span class="nut-val" id="valFat">0 g</span>
-                            </div>
-                            <div class="nut-row"><span class="nut-label">Carbs</span>
-                                <div class="nut-bar-bg">
-                                    <div class="nut-bar bar-carb" id="barCarb" style="width:0%"></div>
-                                </div><span class="nut-val" id="valCarb">0 g</span>
+                            <div class="totals-grid">
+                                <div class="total-box">
+                                    <div class="lbl">Total Cost</div>
+                                    <div class="val" id="totalCost">₹0</div>
+                                </div>
+                                <div class="total-box">
+                                    <div class="lbl">Remaining</div>
+                                    <div class="val" id="remaining">₹100</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="suggestions" id="suggBox" style="display:none;"></div>
+                        <div class="planner-panel">
+                            <h3>🔬 Nutrition Summary</h3>
+                            <div class="nutrition-summary">
+                                <div class="nut-row"><span class="nut-label">Calories</span>
+                                    <div class="nut-bar-bg">
+                                        <div class="nut-bar bar-cal" id="barCal" style="width:0%"></div>
+                                    </div><span class="nut-val" id="valCal">0 kcal</span>
+                                </div>
+                                <div class="nut-row"><span class="nut-label">Protein</span>
+                                    <div class="nut-bar-bg">
+                                        <div class="nut-bar bar-pro" id="barPro" style="width:0%"></div>
+                                    </div><span class="nut-val" id="valPro">0 g</span>
+                                </div>
+                                <div class="nut-row"><span class="nut-label">Fat</span>
+                                    <div class="nut-bar-bg">
+                                        <div class="nut-bar bar-fat" id="barFat" style="width:0%"></div>
+                                    </div><span class="nut-val" id="valFat">0 g</span>
+                                </div>
+                                <div class="nut-row"><span class="nut-label">Carbs</span>
+                                    <div class="nut-bar-bg">
+                                        <div class="nut-bar bar-carb" id="barCarb" style="width:0%"></div>
+                                    </div><span class="nut-val" id="valCarb">0 g</span>
+                                </div>
+                            </div>
+                            <div class="suggestions" id="suggBox" style="display:none;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <!-- ===== FLOATING SUMMARY (Mobile Only) ===== -->
-        <div class="floating-summary" id="floatingSummary">
-            <div class="float-item">💰 <span id="floatCost">₹0</span></div>
-            <div class="float-item">🔥 <span id="floatCal">0</span></div>
-            <div class="float-item">🥩 <span id="floatPro">0g</span></div>
-        </div>
+            <!-- ===== FLOATING SUMMARY (Mobile Only) ===== -->
+            <div class="floating-summary" id="floatingSummary">
+                <div class="float-item">💰 <span id="floatCost">₹0</span></div>
+                <div class="float-item">🔥 <span id="floatCal">0</span></div>
+                <div class="float-item">🥩 <span id="floatPro">0g</span></div>
+            </div>
     </section>
+
+    <!-- ===== RECOMMENDATION OVERLAY ===== -->
+    <div class="reco-overlay" id="recoOverlay">
+        <h2 style="font-size:2rem;color:var(--dark);">🥗 Personalized For You</h2>
+        <p style="color:var(--gray);max-width:600px;">Based on your goal to <strong><span id="recoGoalText">gain
+                    weight</span></strong> and budget of <strong>₹<span id="recoBudgetText">200</span></strong>, we
+            recommend starting with one of these plans:</p>
+
+        <div class="reco-grid" id="recoGrid">
+            <!-- Cards generated by JS -->
+        </div>
+
+        <button onclick="skipRecommendations()"
+            style="margin-top:2rem; background:none; border:none; color:var(--gray); text-decoration:underline; cursor:pointer; font-weight:600;">I'll
+            build my own plate from scratch</button>
+    </div>
 
 
     <section id="about">
@@ -2500,7 +2619,114 @@
             // Show personalised banner inside planner section
             updatePlannerBanner();
 
+            // Instead of showing planner, show recommendations
+            generateRecommendations();
+
             closePrefModal();
+            // document.getElementById('planner').scrollIntoView({ behavior: 'smooth' }); // Don't scroll yet
+        }
+
+        let currentRecommendations = [];
+
+        function generateRecommendations() {
+            const grid = document.getElementById('recoGrid');
+            document.getElementById('recoGoalText').innerText = userPrefs.goal === 'gain' ? 'Gain Weight' : userPrefs.goal === 'lose' ? 'Lose Weight' : 'Maintain';
+            document.getElementById('recoBudgetText').innerText = userPrefs.budget;
+
+            // Logic to pick items
+            const pool = foods.filter(f => {
+                const dietMatch = userPrefs.diet === 'veg' ? f.diet === 'veg' :
+                    userPrefs.diet === 'egg' ? (f.diet === 'veg' || f.diet === 'egg') : true;
+                return dietMatch;
+            });
+
+            const staples = pool.filter(f => f.free);
+            const proteinItems = pool.filter(f => !f.free && (f.pro >= 10 || f.cat === 'Dairy'));
+            const lightItems = pool.filter(f => !f.free && f.cal < 200);
+
+            // 1. Budget Plan (Cheap staples)
+            const plan1 = {
+                title: "💰 Budget Saver",
+                desc: "Focuses on filling staples and high-protein dal.",
+                items: [
+                    staples.find(f => f.name.includes('Dal')) || pool[0],
+                    staples.find(f => f.name.includes('Rice')) || pool[1],
+                    pool.find(f => f.name.includes('Cucumber')) || pool[2]
+                ].filter(Boolean),
+                tag: "Cheapest"
+            };
+
+            // 2. Balanced Plan (Optimal mix)
+            const plan2 = {
+                title: "⚖️ Balanced Choice",
+                desc: "Great mix of fiber, protein, and energy.",
+                items: [
+                    staples.find(f => f.name.includes('Roti')) || pool[0],
+                    pool.find(f => f.name.includes('Chana')) || pool.find(f => f.pro > 8),
+                    pool.find(f => f.cat === 'Fruit') || pool[3]
+                ].filter(Boolean),
+                tag: "Most Popular",
+                best: true
+            };
+
+            // 3. Power Plan (Goal Oriented)
+            const isGain = userPrefs.goal === 'gain';
+            const plan3 = {
+                title: isGain ? "💪 Power Builder" : "🏃 Lean Pack",
+                desc: isGain ? "High protein and calories for gains." : "Low calorie, high protein for cutting.",
+                items: [
+                    isGain ? (pool.find(f => f.name.includes('Paneer')) || pool.find(f => f.pro > 12)) : pool.find(f => f.name.includes('Sprouts')),
+                    staples.find(f => f.name.includes('Rice')) || staples[0],
+                    pool.find(f => f.name.includes('Curd')) || pool.find(f => f.cat === 'Dairy')
+                ].filter(Boolean),
+                tag: isGain ? "High Energy" : "Lean Choice"
+            };
+
+            currentRecommendations = [plan1, plan2, plan3];
+
+            grid.innerHTML = currentRecommendations.map((p, i) => {
+                const totalCost = p.items.filter(f => !f.free).reduce((s, f) => s + f.price, 0);
+                const totalCal = p.items.reduce((s, f) => s + f.cal, 0);
+                return `
+                    <div class="reco-card ${p.best ? 'best' : ''}" onclick="selectRecommendation(${i})">
+                        ${p.tag ? `<div class="reco-tag">${p.tag}</div>` : ''}
+                        <h4>${p.title}</h4>
+                        <p style="font-size:.8rem;color:var(--gray);margin:0;">${p.desc}</p>
+                        <ul class="reco-items">
+                            ${p.items.map(item => `<li>✅ ${item.name}</li>`).join('')}
+                        </ul>
+                        <div class="reco-stats">
+                            <span>₹${totalCost}</span>
+                            <span>${totalCal} kcal</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('recoOverlay').classList.add('active');
+        }
+
+        function selectRecommendation(idx) {
+            const plan = currentRecommendations[idx];
+            plates[activeMeal] = plan.items.map(item => ({ ...item }));
+            plate = plates[activeMeal];
+
+            document.getElementById('recoOverlay').classList.remove('active');
+            revealPlanner();
+        }
+
+        function skipRecommendations() {
+            plates[activeMeal] = [];
+            plate = plates[activeMeal];
+            document.getElementById('recoOverlay').classList.remove('active');
+            revealPlanner();
+        }
+
+        function revealPlanner() {
+            document.getElementById('plannerContent').style.display = 'block';
+            updatePlannerBanner();
+            renderPlate();
+            updateTotals();
             document.getElementById('planner').scrollIntoView({ behavior: 'smooth' });
         }
 
