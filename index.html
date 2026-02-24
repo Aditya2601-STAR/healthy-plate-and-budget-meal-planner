@@ -320,12 +320,22 @@
 
         .planner-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
             align-items: start;
         }
 
-        @media(max-width:700px) {
+        @media(max-width:1100px) {
+            .planner-layout {
+                grid-template-columns: 1.2fr 1fr;
+            }
+
+            .planner-panel.price-panel {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media(max-width:750px) {
             .planner-layout {
                 grid-template-columns: 1fr;
             }
@@ -399,6 +409,20 @@
             cursor: pointer;
             border: 2px solid transparent;
             transition: border-color .2s, background .2s;
+        }
+
+        .recipe-box {
+            border-color: #6366f1;
+            background: #f5f3ff;
+        }
+
+        .recipe-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #6366f1;
+            border: 1.5px solid #fff;
+            box-shadow: 0 0 0 1.5px #6366f1;
         }
 
         .food-item:hover {
@@ -1545,7 +1569,19 @@
                     </div>
                     <div class="food-list" id="foodList"></div>
                 </div>
-                <div>
+                <div class="planner-panel price-panel">
+                    <h3>📊 Live Price Check</h3>
+                    <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 1rem;">Real Indian market prices
+                        via Agmarknet</p>
+                    <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+                        <input type="text" id="priceQuery" placeholder="e.g. dal, paneer..."
+                            style="flex:1; border:2px solid #d1fae5; border-radius:10px; padding:.5rem .8rem; font-family:'Nunito',sans-serif; font-size:.95rem; outline:none;" />
+                        <button onclick="searchPrice()" class="add-btn" style="padding: 0.5rem 1rem;">Check</button>
+                    </div>
+                    <div id="priceResults" class="price-results" style="max-height: 500px; overflow-y: auto;"></div>
+                </div>
+
+                <div class="planner-right">
                     <div class="planner-panel" style="margin-bottom:1.5rem;">
                         <h3>🪣 Your Budget</h3>
                         <div class="budget-row">
@@ -1555,7 +1591,7 @@
                             <span style="font-size:.85rem;color:var(--gray);">per meal</span>
                         </div>
                         <h3>🍽 Your Plate</h3>
-                        <div class="plate-display" id="plateDisplay">
+                        <div class="plate-display" id="plateDisplay" style="max-height: 250px; overflow-y: auto;">
                             <div class="empty-plate">🫙<br />No items added yet.<br />Select from the food database!
                             </div>
                         </div>
@@ -1601,20 +1637,6 @@
         </div>
     </section>
 
-    <!-- ===== LIVE PRICE SECTION ===== -->
-    <section id="price-section">
-        <div class="container">
-            <h2 class="section-title">📊 Live Ingredient Price Check</h2>
-            <p class="section-sub">Real Indian market prices via Agmarknet + nutrition data via Spoonacular</p>
-            <div class="price-search-wrap">
-                <div class="price-search-bar">
-                    <input type="text" id="priceQuery" placeholder="e.g. dal, paneer, milk, eggs, rice, onion..." />
-                    <button onclick="searchPrice()">Check Price</button>
-                </div>
-                <div id="priceResults" class="price-results"></div>
-            </div>
-        </div>
-    </section>
 
     <section id="about">
         <div class="container">
@@ -1691,6 +1713,7 @@
         <p>Dilkap Research Institute of Engineering and Management Studies, Suman Educational Trust</p>
     </footer>
 
+    <script src="recipes_data.js"></script>
     <script>
         // ===== FOOD DATABASE (56 items) =====
         const foods = [
@@ -1845,16 +1868,41 @@
         };
 
         function findRecipe(foodName) {
-            // Try exact, then partial match
+            // 1. Try hardcoded RECIPES
             const keys = Object.keys(RECIPES);
             const clean = foodName.replace(/\(.*?\)/g, '').replace(/\d+g|\d+\s*(pcs|bowl|plate|glass|cup)/gi, '').trim();
-            return RECIPES[clean] ||
-                RECIPES[foodName] ||
+            let recipe = RECIPES[clean] || RECIPES[foodName] ||
                 keys.map(k => ({ k, score: clean.split(' ').filter(w => k.toLowerCase().includes(w.toLowerCase())).length }))
                     .filter(x => x.score > 0)
                     .sort((a, b) => b.score - a.score)
-                    .map(x => RECIPES[x.k])[0] ||
-                null;
+                    .map(x => RECIPES[x.k])[0];
+
+            if (recipe) return recipe;
+
+            // 2. Try extended RECIPE_DB
+            if (typeof RECIPE_DB !== 'undefined') {
+                const dbMatch = RECIPE_DB.find(r => r.name.toLowerCase() === foodName.toLowerCase()) ||
+                    RECIPE_DB.find(r => r.name.toLowerCase().includes(clean.toLowerCase()));
+                if (dbMatch) {
+                    // Estimate nutrition if not present
+                    const estimatedCal = dbMatch.calories || 250; // Default estimate
+                    const estimatedPro = dbMatch.protein || 10; // Default estimate
+                    const estimatedFat = dbMatch.fat || 8; // Default estimate
+                    const estimatedCarb = dbMatch.carbs || 30; // Default estimate
+
+                    return {
+                        time: dbMatch.time || "25 min",
+                        serves: dbMatch.serves || 2,
+                        ing: dbMatch.ingredients.split('|').map(s => s.trim()).filter(s => s),
+                        steps: dbMatch.instructions.split('.').map(s => s.trim()).filter(s => s.length > 5),
+                        cal: estimatedCal,
+                        pro: estimatedPro,
+                        fat: estimatedFat,
+                        carb: estimatedCarb
+                    };
+                }
+            }
+            return null;
         }
 
         // ===== RECIPE MODAL =====
@@ -1869,6 +1917,20 @@
             const ingredients = recipe.ing.map(i => `<span class="recipe-ing-tag">${i}</span>`).join('');
             const steps = recipe.steps.map((s, i) =>
                 `<li><div class="recipe-step-num">${i + 1}</div><div>${s}</div></li>`).join('');
+
+            let nutritionInfo = '';
+            if (recipe.cal || recipe.pro || recipe.fat || recipe.carb) {
+                nutritionInfo = `
+                    <div class="recipe-section-head">📊 Nutrition (estimated)</div>
+                    <div class="recipe-nutrition-summary">
+                        ${recipe.cal ? `<span>🔥 ${recipe.cal} kcal</span>` : ''}
+                        ${recipe.pro ? `<span>💪 ${recipe.pro}g Protein</span>` : ''}
+                        ${recipe.fat ? `<span>🧈 ${recipe.fat}g Fat</span>` : ''}
+                        ${recipe.carb ? `<span>🍚 ${recipe.carb}g Carbs</span>` : ''}
+                    </div>
+                `;
+            }
+
             document.getElementById('recipeContent').innerHTML = `
                 <div class="recipe-header">
                     <div class="recipe-img-placeholder">🍽</div>
@@ -1882,6 +1944,7 @@
                 </div>
                 <div class="recipe-section-head">🧂 Ingredients</div>
                 <div class="recipe-ingredients">${ingredients}</div>
+                ${nutritionInfo}
                 <div class="recipe-section-head">👨‍🍳 Steps</div>
                 <ol class="recipe-steps">${steps}</ol>`;
         }
@@ -1911,100 +1974,161 @@
             updateTotals();
         }
 
-        function filterFood(q) {
-            q = q.toLowerCase();
-            const diet = userPrefs.diet || 'all';
-            visibleFoods = foods.filter(f => {
-                const matchText = f.name.toLowerCase().includes(q) || f.cat.toLowerCase().includes(q);
-                const matchDiet = diet === 'all' ||
-                    f.diet === diet ||
-                    (diet === 'egg' && f.diet === 'veg') ||
-                    (diet === 'nonveg');
+        function filterFood(query) {
+            console.log('Filtering:', query);
+            const q = query.toLowerCase();
 
-                // Meal filtering: Allow if item's meal array includes activeMeal OR if it's dairy/snacks (usually all meals)
-                const matchMeal = f.meal && f.meal.includes(activeMeal);
-
-                return matchText && matchDiet && matchMeal;
+            // Core list filtering
+            let filtered = foods.filter(f => {
+                const matchesSearch = f.name.toLowerCase().includes(q) || f.cat.toLowerCase().includes(q);
+                const matchesMeal = f.meal.includes(activeMeal);
+                const matchesDiet = userPrefs.diet === 'veg' ? f.diet === 'veg' :
+                    userPrefs.diet === 'egg' ? (f.diet === 'veg' || f.diet === 'egg') : true;
+                return matchesSearch && matchesMeal && matchesDiet;
             });
+
+            // Extended DB filtering (only if searching)
+            if (q.length > 2 && typeof RECIPE_DB !== 'undefined') {
+                const extended = RECIPE_DB.filter(r => {
+                    const matchesSearch = r.name.toLowerCase().includes(q);
+                    const matchesMeal = r.meal.includes(activeMeal);
+                    const matchesDiet = userPrefs.diet === 'veg' ? r.diet === 'veg' :
+                        userPrefs.diet === 'egg' ? (r.diet === 'veg' || r.diet === 'egg') : true;
+
+                    // Optimization: Check if already in filtered core list
+                    const exists = filtered.some(f => f.name.toLowerCase() === r.name.toLowerCase());
+                    return matchesSearch && matchesMeal && matchesDiet && !exists;
+                }).map(r => ({
+                    name: r.name,
+                    cat: r.category || 'Recipe', // Default category
+                    diet: r.diet || 'veg', // Default diet
+                    price: r.price || 0, // Default price
+                    cal: r.calories || 250, // Estimated calories
+                    pro: r.protein || 10, // Estimated protein
+                    fat: r.fat || 8, // Estimated fat
+                    carb: r.carbs || 30, // Estimated carbs
+                    free: false, // Extended recipes are not free
+                    meal: r.meal,
+                    isExtended: true // Flag for extended recipes
+                }));
+                filtered = [...filtered, ...extended];
+            }
+
+            visibleFoods = filtered;
             renderFoodList();
         }
 
         function renderFoodList() {
-            const el = document.getElementById('foodList');
-            el.innerHTML = '';
+            const listEl = document.getElementById('foodList');
+            if (visibleFoods.length === 0) {
+                listEl.innerHTML = `
+                    <div style="grid-column: 1/-1; padding: 3rem; text-align: center; background: #f9fafb; border-radius: 20px; border: 2px dashed #e5e7eb;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+                        <h3 style="color: #374151; font-weight: 700;">No items found</h3>
+                        <p style="color: #6b7280;">Try searching for something else or broaden your preferences.</p>
+                    </div>`;
+                return;
+            }
 
-            const vegItems = visibleFoods.filter(f => f.diet === 'veg' && f.cat !== 'Dairy');
-            const dairyItems = visibleFoods.filter(f => f.cat === 'Dairy');
-            const meatItems = visibleFoods.filter(f => f.diet === 'egg' || f.diet === 'nonveg');
+            // Group by category
+            const categories = {};
+            // Performance Limit: only categorize and render first 50 results
+            const renderLimit = visibleFoods.slice(0, 50);
 
+            renderLimit.forEach((f, idx) => {
+                if (!categories[f.cat]) categories[f.cat] = [];
+                categories[f.cat].push({ ...f, originalIndex: foods.indexOf(f) === -1 ? -idx - 1 : foods.indexOf(f), isExtended: foods.indexOf(f) === -1 });
+            });
+
+            let content = '';
             const sections = [
-                { label: '🥗 Vegetarian', items: vegItems, boxClass: 'veg-box', dot: 'veg-dot' },
-                { label: '🥛 Dairy', items: dairyItems, boxClass: 'dairy-box', dot: 'dairy-dot' },
-                { label: '🍖 Meat & Eggs', items: meatItems, boxClass: 'meat-box', dot: 'nonveg-dot' },
+                { label: '🥗 Vegetarian', items: renderLimit.filter(f => f.diet === 'veg' && f.cat !== 'Dairy'), boxClass: 'veg-box', dot: 'veg-dot' },
+                { label: '🥛 Dairy', items: renderLimit.filter(f => f.cat === 'Dairy'), boxClass: 'dairy-box', dot: 'dairy-dot' },
+                { label: '🍖 Meat & Eggs', items: renderLimit.filter(f => f.diet === 'egg' || f.diet === 'nonveg'), boxClass: 'meat-box', dot: 'nonveg-dot' },
+                { label: '🍲 Other Recipes', items: renderLimit.filter(f => f.isExtended && !['veg', 'egg', 'nonveg'].includes(f.diet)), boxClass: 'recipe-box', dot: 'recipe-dot' }
             ];
 
             sections.forEach(({ label, items, boxClass, dot }) => {
                 if (items.length === 0) return;
 
-                // Section box wrapper
-                const box = document.createElement('div');
-                box.className = `food-section-box ${boxClass}`;
-
-                const hdr = document.createElement('div');
-                hdr.className = 'food-section-header';
-                hdr.textContent = label;
-                box.appendChild(hdr);
-
-                items.forEach(food => {
-                    const idx = foods.indexOf(food);
-                    const isRawDairy = food.cat === 'Dairy' && !food.free;
-                    const div = document.createElement('div');
-                    div.className = 'food-item';
-                    div.innerHTML = `
-                      <div style="display:flex;align-items:flex-start;gap:.3rem">
-                        <span class="${dot}" title="${dot === 'veg-dot' ? 'Vegetarian' : dot === 'dairy-dot' ? 'Dairy' : 'Non-Vegetarian'}"></span>
-                        <div>
-                          <div class="food-name">${food.name}${food.free ? ' <span style="font-size:.7rem;color:var(--green);font-weight:800;">🏠 FREE</span>' : ''}</div>
-                          <div class="food-meta">${food.cal} kcal · ${food.pro}g protein · <em>${food.cat}</em></div>
-                        </div>
-                      </div>
-                      <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;justify-content:flex-end">
-                        ${food.free
-                            ? `<span style="background:#e8f5e9;color:var(--green);border-radius:8px;padding:.22rem .6rem;font-size:.78rem;font-weight:700;">Staple</span>
-                             <input type="number" id="qty-${idx}" min="0.5" max="10" step="0.5" value="1"
-                               style="width:52px;border:2px solid #d1fae5;border-radius:8px;padding:.2rem .3rem;font-family:'Nunito',sans-serif;font-size:.85rem;text-align:center;outline:none;color:var(--dark);">
-                             <button class="add-btn" onclick="addFood(${idx}, parseFloat(document.getElementById('qty-${idx}').value)||1)">+ Add</button>
-                             <button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>`
-                            : `<span class="food-price">₹${food.price}</span>
-                             ${isRawDairy ? '' : `<button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>`}
-                             <button class="add-btn" onclick="addFood(${idx})">+ Add</button>`}
-                      </div>`;
-                    box.appendChild(div);
+                content += `<div class="food-section-box ${boxClass}">`;
+                content += `<div class="food-section-header">${label}</div>`;
+                content += `<div class="food-grid">`;
+                items.forEach(f => {
+                    const idx = f.originalIndex;
+                    const isExtended = f.isExtended;
+                    content += `
+                        <div class="food-item ${f.diet}" style="position:relative">
+                            <span class="diet-dot ${f.diet}"></span>
+                            ${isExtended ? '<span style="position:absolute;top:10px;right:10px;font-size:0.6rem;background:rgba(0,0,0,0.05);padding:2px 6px;border-radius:10px;">RECIPE</span>' : ''}
+                            <div class="food-info">
+                                <span class="food-name">${f.name}${f.free ? ' <span style="font-size:.7rem;color:var(--green);font-weight:800;">🏠 FREE</span>' : ''}</span>
+                                <div class="food-meta">${f.cal} kcal · ${f.pro}g protein · <em>${f.cat}</em></div>
+                            </div>
+                            <div class="food-actions">
+                                ${f.free
+                            ? `<input type="number" id="qty-${idx}" min="0.5" max="10" step="0.5" value="1"
+                                       style="width:52px;border:2px solid #d1fae5;border-radius:8px;padding:.2rem .3rem;font-family:'Nunito',sans-serif;font-size:.85rem;text-align:center;outline:none;color:var(--dark);">
+                                     <button class="add-btn" onclick="addFood(${idx}, parseFloat(document.getElementById('qty-${idx}').value)||1)">+ Add</button>`
+                            : `<span class="food-price">₹${f.price}</span>
+                                     <button class="add-btn" onclick="addFood(${idx}${isExtended ? ', -1' : ''})">+ Add</button>`}
+                                <button class="recipe-btn" onclick="showRecipe('${f.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>
+                            </div>
+                        </div>`;
                 });
-
-                el.appendChild(box);
+                content += `</div></div>`;
             });
+            listEl.innerHTML = content;
         }
 
-        function addFood(idx, qty) {
-            qty = qty || 1;
-            const base = foods[idx];
-            if (qty !== 1) {
-                // Clone with scaled nutrition, keep price 0 for free items
+        function addFood(identifier, qtyOrIsExtended = 1) {
+            let item;
+            let qty = 1;
+
+            if (typeof qtyOrIsExtended === 'number' && qtyOrIsExtended !== -1) {
+                // Case 1: Core food item with quantity
+                item = foods[identifier];
+                qty = qtyOrIsExtended;
+            } else if (qtyOrIsExtended === -1) {
+                // Case 2: Extended DB item (identifier is originalIndex from visibleFoods)
+                // We need to find the item in visibleFoods using its originalIndex
+                const foundInVisible = visibleFoods.find(f => f.originalIndex === identifier);
+                if (foundInVisible && foundInVisible.isExtended) {
+                    item = foundInVisible;
+                } else {
+                    // Fallback if not found or not extended (shouldn't happen with correct originalIndex)
+                    item = foods[identifier];
+                }
+            } else {
+                // Case 3: Core food item, no quantity specified (default to 1)
+                item = foods[identifier];
+            }
+
+            if (!item) return;
+
+            if (qty !== 1 && !item.isExtended) { // Apply quantity scaling only for core items, not extended recipes
                 plates[activeMeal].push({
-                    ...base,
-                    name: `${base.name} ×${qty}`,
-                    cal: Math.round(base.cal * qty),
-                    pro: Math.round(base.pro * qty * 10) / 10,
-                    fat: Math.round(base.fat * qty * 10) / 10,
-                    carb: Math.round(base.carb * qty * 10) / 10,
-                    price: Math.round(base.price * qty),
+                    ...item,
+                    name: `${item.name} ×${qty}`,
+                    cal: Math.round(item.cal * qty),
+                    pro: Math.round(item.pro * qty * 10) / 10,
+                    fat: Math.round(item.fat * qty * 10) / 10,
+                    carb: Math.round(item.carb * qty * 10) / 10,
+                    price: Math.round(item.price * qty),
                 });
             } else {
-                plates[activeMeal].push(base);
+                plates[activeMeal].push({ ...item });
             }
             plate = plates[activeMeal];
-            renderPlate(); updateTotals();
+            renderPlate();
+            updateTotals();
+
+            // Toast feedback
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#10b981;color:white;padding:10px 20px;border-radius:30px;font-weight:700;box-shadow:0 10px 15px rgba(0,0,0,0.1);z-index:10000;';
+            toast.innerText = `✅ Added ${item.name} to ${activeMeal}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
         }
 
         function removeFood(pIdx) {
