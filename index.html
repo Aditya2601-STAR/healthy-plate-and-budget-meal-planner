@@ -1758,23 +1758,42 @@
         function renderFoodList() {
             const el = document.getElementById('foodList');
             el.innerHTML = '';
-            visibleFoods.forEach(food => {
-                const idx = foods.indexOf(food);
-                const div = document.createElement('div');
-                div.className = 'food-item';
-                div.innerHTML = `
-                  <div>
-                    <div class="food-name">${food.name}${food.free ? ' <span style="font-size:.7rem;color:var(--green);font-weight:800;">🏠 FREE</span>' : ''}</div>
-                    <div class="food-meta">${food.cal} kcal · ${food.pro}g protein · <em>${food.cat}</em></div>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;justify-content:flex-end">
-                    ${food.free
-                        ? '<span style="background:#e8f5e9;color:var(--green);border-radius:8px;padding:.22rem .6rem;font-size:.78rem;font-weight:700;">Home Staple</span>'
-                        : `<span class="food-price">₹${food.price}</span>`}
-                    <button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>
-                    <button class="add-btn" onclick="addFood(${idx})">+ Add</button>
-                  </div>`;
-                el.appendChild(div);
+
+            const vegItems = visibleFoods.filter(f => f.diet === 'veg' && f.cat !== 'Dairy');
+            const dairyItems = visibleFoods.filter(f => f.cat === 'Dairy');
+            const meatItems = visibleFoods.filter(f => f.diet === 'egg' || f.diet === 'nonveg');
+
+            const sections = [
+                { label: '🥗 Vegetarian', items: vegItems },
+                { label: '🥛 Dairy', items: dairyItems },
+                { label: '🍖 Meat & Eggs', items: meatItems },
+            ];
+
+            sections.forEach(({ label, items }) => {
+                if (items.length === 0) return;
+                const hdr = document.createElement('div');
+                hdr.className = 'food-section-header';
+                hdr.textContent = label;
+                el.appendChild(hdr);
+
+                items.forEach(food => {
+                    const idx = foods.indexOf(food);
+                    const div = document.createElement('div');
+                    div.className = 'food-item';
+                    div.innerHTML = `
+                      <div>
+                        <div class="food-name">${food.name}${food.free ? ' <span style="font-size:.7rem;color:var(--green);font-weight:800;">🏠 FREE</span>' : ''}</div>
+                        <div class="food-meta">${food.cal} kcal · ${food.pro}g protein · <em>${food.cat}</em></div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;justify-content:flex-end">
+                        ${food.free
+                            ? '<span style="background:#e8f5e9;color:var(--green);border-radius:8px;padding:.22rem .6rem;font-size:.78rem;font-weight:700;">Home Staple</span>'
+                            : `<span class="food-price">₹${food.price}</span>`}
+                        <button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>
+                        <button class="add-btn" onclick="addFood(${idx})">+ Add</button>
+                      </div>`;
+                    el.appendChild(div);
+                });
             });
         }
 
