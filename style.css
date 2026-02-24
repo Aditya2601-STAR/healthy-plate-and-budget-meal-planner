@@ -553,6 +553,62 @@ input[type="number"]::-webkit-outer-spin-button {
   color: #f87171;
 }
 
+.price-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 10px 0;
+  font-style: italic;
+}
+
+/* Section divider titles */
+.price-section-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin: 12px 0 8px;
+  grid-column: 1 / -1;
+}
+
+.price-section-title.mt {
+  margin-top: 24px;
+}
+
+/* Market (mandi) card variant */
+.market-card {
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.market-card:hover {
+  border-color: rgba(34, 197, 94, 0.55);
+}
+
+/* Nutrition card variant */
+.nutrition-card {
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.nutrition-card:hover {
+  border-color: rgba(245, 158, 11, 0.55);
+}
+
+.market-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.price-location {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.price-range {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 600px) {
   header {
