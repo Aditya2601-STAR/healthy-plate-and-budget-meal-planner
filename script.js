@@ -4,6 +4,28 @@ const SPOONACULAR_KEY = '1562b6de6d5c492ea09b23f6d688cd90';
 const DATA_GOV_KEY = '579b464db66ec23bdd00000131f9a32ca0424b8f45573d97b3ee0d19';
 const USD_TO_INR = 83;
 
+// ===== Indian Dairy & Packaged Price Database (retail estimates) =====
+const DAIRY_PRICES = [
+    { name: 'Cow Milk (Maharashtra)', keywords: ['milk', 'cow milk'], price: '₹60/litre', unit: 'litre', icon: '🥛' },
+    { name: 'Buffalo Milk', keywords: ['buffalo milk'], price: '₹70–₹80/litre', unit: 'litre', icon: '🥛' },
+    { name: 'Toned Milk (Packaged)', keywords: ['toned milk', 'amul milk', 'packaged milk'], price: '₹55–₹58/litre', unit: 'litre', icon: '🥛' },
+    { name: 'Paneer', keywords: ['paneer'], price: '₹380–₹420/kg', unit: 'kg', icon: '🧀' },
+    { name: 'Curd / Dahi', keywords: ['curd', 'dahi', 'yogurt', 'yoghurt'], price: '₹60–₹80/500g', unit: '500g', icon: '🥛' },
+    { name: 'Ghee', keywords: ['ghee'], price: '₹600–₹700/500g', unit: '500g', icon: '🍶' },
+    { name: 'Butter (Amul)', keywords: ['butter'], price: '₹58–₹65/100g', unit: '100g', icon: '🧈' },
+    { name: 'Cheese (Processed)', keywords: ['cheese'], price: '₹180–₹220/200g', unit: '200g', icon: '🧀' },
+    { name: 'Buttermilk / Chaas', keywords: ['buttermilk', 'chaas', 'lassi'], price: '₹20–₹30/200ml', unit: '200ml', icon: '🥛' },
+    { name: 'Skimmed Milk Powder', keywords: ['milk powder', 'skimmed milk'], price: '₹380–₹420/kg', unit: 'kg', icon: '🥛' },
+    { name: 'Eggs (Chicken)', keywords: ['egg', 'eggs'], price: '₹6–₹8/egg (₹72–₹96/dozen)', unit: 'dozen', icon: '🥚' },
+];
+
+function lookupDairyPrice(query) {
+    const q = query.toLowerCase().trim();
+    return DAIRY_PRICES.filter(item =>
+        item.keywords.some(k => q.includes(k) || k.includes(q))
+    );
+}
+
 let selectedGoal = '';
 
 // Show/hide step sections
@@ -159,7 +181,22 @@ async function searchPrice() {
                     </div>
                 </div>`).join('');
         } else {
-            html += '<p class="price-note">ℹ️ No mandi data for this item. Try: rice, dal, wheat, tomato, milk, potato, onion.</p>';
+            // Fallback: check local dairy price database
+            const dairyMatches = lookupDairyPrice(query);
+            if (dairyMatches.length > 0) {
+                html += '<div class="price-section-title">🥛 Indian Dairy & Retail Prices</div>';
+                html += dairyMatches.map(d => `
+                    <div class="price-card market-card dairy-card">
+                        <div class="market-icon">${d.icon}</div>
+                        <div class="price-info">
+                            <span class="price-name">${d.name}</span>
+                            <span class="price-amount dairy-price">${d.price}</span>
+                            <span class="price-range">📍 Indian retail market estimate</span>
+                        </div>
+                    </div>`).join('');
+            } else {
+                html += '<p class="price-note">ℹ️ No mandi data found. Try: rice, dal, wheat, tomato, milk, paneer, eggs, curd, ghee.</p>';
+            }
         }
 
         // --- Section 2: Nutrition (Spoonacular) ---
