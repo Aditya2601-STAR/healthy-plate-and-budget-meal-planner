@@ -331,6 +331,42 @@
             }
         }
 
+        /* ===== MEAL TABS ===== */
+        .meal-tabs {
+            display: flex;
+            gap: .5rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .meal-tab {
+            flex: 1;
+            padding: .7rem;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            background: #fff;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            font-size: .85rem;
+        }
+
+        .meal-tab.active {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+        }
+
+        .meal-tab:not(.active):hover {
+            border-color: var(--green-mid);
+            background: var(--green-light);
+        }
+
         .planner-panel {
             background: var(--white);
             border-radius: 18px;
@@ -1496,6 +1532,12 @@
             <div class="planner-layout">
                 <div class="planner-panel">
                     <h3>📋 Food Database</h3>
+                    <div class="meal-tabs">
+                        <button class="meal-tab active" id="tab-breakfast" onclick="switchMeal('breakfast')">🌅
+                            Breakfast</button>
+                        <button class="meal-tab" id="tab-lunch" onclick="switchMeal('lunch')">☀️ Lunch</button>
+                        <button class="meal-tab" id="tab-dinner" onclick="switchMeal('dinner')">🌙 Dinner</button>
+                    </div>
                     <div style="margin-bottom:1rem;">
                         <input type="text" id="searchBox" placeholder="Search food item..."
                             style="width:100%;border:2px solid #d1fae5;border-radius:10px;padding:.5rem .8rem;font-family:'Nunito',sans-serif;font-size:.95rem;outline:none;"
@@ -1653,78 +1695,87 @@
         // ===== FOOD DATABASE (56 items) =====
         const foods = [
             // --- Vegetarian: Staples ---
-            { name: "Roti (2 pcs)", cat: "Staple", diet: "veg", price: 0, cal: 150, pro: 4, fat: 1, carb: 30, free: true },
-            { name: "Dal (1 bowl)", cat: "Protein", diet: "veg", price: 0, cal: 120, pro: 8, fat: 2, carb: 18, free: true },
-            { name: "Rice (1 plate)", cat: "Staple", diet: "veg", price: 0, cal: 200, pro: 4, fat: 1, carb: 45, free: true },
-            { name: "Aloo Paratha", cat: "Breakfast", diet: "veg", price: 25, cal: 280, pro: 6, fat: 9, carb: 42 },
-            { name: "Methi Paratha", cat: "Breakfast", diet: "veg", price: 22, cal: 240, pro: 5, fat: 7, carb: 38 },
-            { name: "Puri Bhaji", cat: "Breakfast", diet: "veg", price: 30, cal: 310, pro: 6, fat: 14, carb: 42 },
+            { name: "Roti (2 pcs)", cat: "Staple", diet: "veg", price: 0, cal: 150, pro: 4, fat: 1, carb: 30, free: true, meal: ["lunch", "dinner"] },
+            { name: "Dal (1 bowl)", cat: "Protein", diet: "veg", price: 0, cal: 120, pro: 8, fat: 2, carb: 18, free: true, meal: ["lunch", "dinner"] },
+            { name: "Rice (1 plate)", cat: "Staple", diet: "veg", price: 0, cal: 200, pro: 4, fat: 1, carb: 45, free: true, meal: ["lunch", "dinner"] },
+            { name: "Aloo Paratha", cat: "Breakfast", diet: "veg", price: 25, cal: 280, pro: 6, fat: 9, carb: 42, meal: ["breakfast"] },
+            { name: "Methi Paratha", cat: "Breakfast", diet: "veg", price: 22, cal: 240, pro: 5, fat: 7, carb: 38, meal: ["breakfast"] },
+            { name: "Puri Bhaji", cat: "Breakfast", diet: "veg", price: 30, cal: 310, pro: 6, fat: 14, carb: 42, meal: ["breakfast"] },
+
             // --- Vegetarian: Protein ---
-            { name: "Chana Masala", cat: "Protein", diet: "veg", price: 30, cal: 210, pro: 11, fat: 7, carb: 28 },
-            { name: "Paneer Sabzi", cat: "Protein", diet: "veg", price: 45, cal: 250, pro: 14, fat: 15, carb: 10 },
-            { name: "Palak Paneer", cat: "Protein", diet: "veg", price: 50, cal: 270, pro: 15, fat: 16, carb: 12 },
-            { name: "Matar Paneer", cat: "Protein", diet: "veg", price: 48, cal: 260, pro: 14, fat: 15, carb: 14 },
-            { name: "Dal Makhani", cat: "Protein", diet: "veg", price: 40, cal: 220, pro: 11, fat: 9, carb: 25 },
-            { name: "Soya Chunks (1 bowl)", cat: "Protein", diet: "veg", price: 15, cal: 170, pro: 18, fat: 3, carb: 12 },
-            { name: "Rajma (1 bowl)", cat: "Protein", diet: "veg", price: 25, cal: 180, pro: 10, fat: 3, carb: 30 },
-            { name: "Kadhi (1 bowl)", cat: "Protein", diet: "veg", price: 20, cal: 140, pro: 4, fat: 6, carb: 18 },
-            { name: "Dum Aloo", cat: "Veggie", diet: "veg", price: 35, cal: 200, pro: 4, fat: 10, carb: 26 },
+            { name: "Chana Masala", cat: "Protein", diet: "veg", price: 30, cal: 210, pro: 11, fat: 7, carb: 28, meal: ["lunch", "dinner"] },
+            { name: "Paneer Sabzi", cat: "Protein", diet: "veg", price: 45, cal: 250, pro: 14, fat: 15, carb: 10, meal: ["lunch", "dinner"] },
+            { name: "Palak Paneer", cat: "Protein", diet: "veg", price: 50, cal: 270, pro: 15, fat: 16, carb: 12, meal: ["lunch", "dinner"] },
+            { name: "Matar Paneer", cat: "Protein", diet: "veg", price: 48, cal: 260, pro: 14, fat: 15, carb: 14, meal: ["lunch", "dinner"] },
+            { name: "Dal Makhani", cat: "Protein", diet: "veg", price: 40, cal: 220, pro: 11, fat: 9, carb: 25, meal: ["lunch", "dinner"] },
+            { name: "Soya Chunks (1 bowl)", cat: "Protein", diet: "veg", price: 15, cal: 170, pro: 18, fat: 3, carb: 12, meal: ["lunch", "dinner"] },
+            { name: "Rajma (1 bowl)", cat: "Protein", diet: "veg", price: 25, cal: 180, pro: 10, fat: 3, carb: 30, meal: ["lunch", "dinner"] },
+            { name: "Kadhi (1 bowl)", cat: "Protein", diet: "veg", price: 20, cal: 140, pro: 4, fat: 6, carb: 18, meal: ["lunch", "dinner"] },
+            { name: "Dum Aloo", cat: "Veggie", diet: "veg", price: 35, cal: 200, pro: 4, fat: 10, carb: 26, meal: ["lunch", "dinner"] },
+
             // --- Vegetarian: Breakfast ---
-            { name: "Poha (1 plate)", cat: "Breakfast", diet: "veg", price: 20, cal: 180, pro: 4, fat: 5, carb: 32 },
-            { name: "Upma", cat: "Breakfast", diet: "veg", price: 18, cal: 150, pro: 4, fat: 6, carb: 25 },
-            { name: "Bread + Butter", cat: "Breakfast", diet: "veg", price: 15, cal: 200, pro: 4, fat: 8, carb: 28 },
-            { name: "Idli (2 pcs)", cat: "Breakfast", diet: "veg", price: 15, cal: 130, pro: 4, fat: 1, carb: 26 },
-            { name: "Plain Dosa", cat: "Breakfast", diet: "veg", price: 25, cal: 160, pro: 4, fat: 5, carb: 28 },
-            { name: "Medu Vada (2 pcs)", cat: "Breakfast", diet: "veg", price: 20, cal: 190, pro: 5, fat: 10, carb: 22 },
+            { name: "Poha (1 plate)", cat: "Breakfast", diet: "veg", price: 20, cal: 180, pro: 4, fat: 5, carb: 32, meal: ["breakfast"] },
+            { name: "Upma", cat: "Breakfast", diet: "veg", price: 18, cal: 150, pro: 4, fat: 6, carb: 25, meal: ["breakfast"] },
+            { name: "Bread + Butter", cat: "Breakfast", diet: "veg", price: 15, cal: 200, pro: 4, fat: 8, carb: 28, meal: ["breakfast"] },
+            { name: "Idli (2 pcs)", cat: "Breakfast", diet: "veg", price: 15, cal: 130, pro: 4, fat: 1, carb: 26, meal: ["breakfast"] },
+            { name: "Plain Dosa", cat: "Breakfast", diet: "veg", price: 25, cal: 160, pro: 4, fat: 5, carb: 28, meal: ["breakfast"] },
+            { name: "Medu Vada (2 pcs)", cat: "Breakfast", diet: "veg", price: 20, cal: 190, pro: 5, fat: 10, carb: 22, meal: ["breakfast"] },
+
             // --- Vegetarian: Veggies ---
-            { name: "Sabzi (Mixed Veg)", cat: "Veggie", diet: "veg", price: 0, cal: 90, pro: 3, fat: 4, carb: 12, free: true },
-            { name: "Sambar (1 bowl)", cat: "Veggie", diet: "veg", price: 15, cal: 80, pro: 4, fat: 2, carb: 14 },
-            { name: "Salad (Mixed)", cat: "Veggie", diet: "veg", price: 20, cal: 45, pro: 2, fat: 0, carb: 9 },
-            { name: "Vegetable Biryani", cat: "Staple", diet: "veg", price: 60, cal: 350, pro: 8, fat: 10, carb: 58 },
-            { name: "Pav Bhaji", cat: "Street", diet: "veg", price: 35, cal: 320, pro: 7, fat: 12, carb: 48 },
-            { name: "Vada Pav", cat: "Street", diet: "veg", price: 15, cal: 250, pro: 5, fat: 10, carb: 38 },
-            { name: "Misal Pav", cat: "Street", diet: "veg", price: 30, cal: 290, pro: 10, fat: 8, carb: 44 },
-            { name: "Bhel Puri", cat: "Snack", diet: "veg", price: 20, cal: 180, pro: 4, fat: 5, carb: 30 },
+            { name: "Sabzi (Mixed Veg)", cat: "Veggie", diet: "veg", price: 0, cal: 90, pro: 3, fat: 4, carb: 12, free: true, meal: ["lunch", "dinner"] },
+            { name: "Sambar (1 bowl)", cat: "Veggie", diet: "veg", price: 15, cal: 80, pro: 4, fat: 2, carb: 14, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Salad (Mixed)", cat: "Veggie", diet: "veg", price: 20, cal: 45, pro: 2, fat: 0, carb: 9, meal: ["lunch", "dinner"] },
+            { name: "Vegetable Biryani", cat: "Staple", diet: "veg", price: 60, cal: 350, pro: 8, fat: 10, carb: 58, meal: ["lunch", "dinner"] },
+            { name: "Pav Bhaji", cat: "Street", diet: "veg", price: 35, cal: 320, pro: 7, fat: 12, carb: 48, meal: ["lunch", "dinner"] },
+            { name: "Vada Pav", cat: "Street", diet: "veg", price: 15, cal: 250, pro: 5, fat: 10, carb: 38, meal: ["breakfast", "lunch"] },
+            { name: "Misal Pav", cat: "Street", diet: "veg", price: 30, cal: 290, pro: 10, fat: 8, carb: 44, meal: ["breakfast", "lunch"] },
+            { name: "Bhel Puri", cat: "Snack", diet: "veg", price: 20, cal: 180, pro: 4, fat: 5, carb: 30, meal: ["lunch", "dinner"] },
+
             // --- Vegetarian: Dairy ---
-            { name: "Curd (1 bowl)", cat: "Dairy", diet: "veg", price: 15, cal: 70, pro: 5, fat: 3, carb: 6 },
-            { name: "Lassi (1 glass)", cat: "Dairy", diet: "veg", price: 20, cal: 120, pro: 5, fat: 4, carb: 18 },
-            { name: "Paneer (50g raw)", cat: "Dairy", diet: "veg", price: 20, cal: 135, pro: 9, fat: 10, carb: 2 },
-            { name: "Milk (1 glass)", cat: "Dairy", diet: "veg", price: 10, cal: 120, pro: 6, fat: 6, carb: 10 },
-            { name: "Ghee (1 tbsp)", cat: "Dairy", diet: "veg", price: 15, cal: 120, pro: 0, fat: 14, carb: 0 },
-            { name: "Butter (1 tbsp)", cat: "Dairy", diet: "veg", price: 10, cal: 100, pro: 0, fat: 11, carb: 0 },
-            { name: "Cheese Slice", cat: "Dairy", diet: "veg", price: 15, cal: 100, pro: 6, fat: 8, carb: 1 },
-            { name: "Buttermilk / Chaas", cat: "Dairy", diet: "veg", price: 10, cal: 60, pro: 3, fat: 2, carb: 8 },
-            { name: "Khoya / Mawa (50g)", cat: "Dairy", diet: "veg", price: 30, cal: 200, pro: 8, fat: 12, carb: 18 },
-            { name: "Fresh Cream (2 tbsp)", cat: "Dairy", diet: "veg", price: 15, cal: 100, pro: 1, fat: 10, carb: 2 },
+            { name: "Curd (1 bowl)", cat: "Dairy", diet: "veg", price: 15, cal: 70, pro: 5, fat: 3, carb: 6, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Lassi (1 glass)", cat: "Dairy", diet: "veg", price: 20, cal: 120, pro: 5, fat: 4, carb: 18, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Paneer (50g raw)", cat: "Dairy", diet: "veg", price: 20, cal: 135, pro: 9, fat: 10, carb: 2, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Milk (1 glass)", cat: "Dairy", diet: "veg", price: 10, cal: 120, pro: 6, fat: 6, carb: 10, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Ghee (1 tbsp)", cat: "Dairy", diet: "veg", price: 15, cal: 120, pro: 0, fat: 14, carb: 0, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Butter (1 tbsp)", cat: "Dairy", diet: "veg", price: 10, cal: 100, pro: 0, fat: 11, carb: 0, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Cheese Slice", cat: "Dairy", diet: "veg", price: 15, cal: 100, pro: 6, fat: 8, carb: 1, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Buttermilk / Chaas", cat: "Dairy", diet: "veg", price: 10, cal: 60, pro: 3, fat: 2, carb: 8, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Khoya / Mawa (50g)", cat: "Dairy", diet: "veg", price: 30, cal: 200, pro: 8, fat: 12, carb: 18, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Fresh Cream (2 tbsp)", cat: "Dairy", diet: "veg", price: 15, cal: 100, pro: 1, fat: 10, carb: 2, meal: ["breakfast", "lunch", "dinner"] },
+
             // --- Vegetarian: Drinks & Fruits ---
-            { name: "Coconut Water", cat: "Drink", diet: "veg", price: 20, cal: 45, pro: 0, fat: 0, carb: 11 },
-            { name: "Banana", cat: "Fruit", diet: "veg", price: 8, cal: 90, pro: 1, fat: 0, carb: 22 },
-            { name: "Apple", cat: "Fruit", diet: "veg", price: 25, cal: 80, pro: 0, fat: 0, carb: 20 },
-            { name: "Orange", cat: "Fruit", diet: "veg", price: 15, cal: 60, pro: 1, fat: 0, carb: 15 },
-            { name: "Watermelon (2 slices)", cat: "Fruit", diet: "veg", price: 10, cal: 45, pro: 1, fat: 0, carb: 11 },
-            { name: "Fruit Salad", cat: "Snack", diet: "veg", price: 30, cal: 130, pro: 2, fat: 0, carb: 32 },
+            { name: "Coconut Water", cat: "Drink", diet: "veg", price: 20, cal: 45, pro: 0, fat: 0, carb: 11, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Banana", cat: "Fruit", diet: "veg", price: 8, cal: 90, pro: 1, fat: 0, carb: 22, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Apple", cat: "Fruit", diet: "veg", price: 25, cal: 80, pro: 0, fat: 0, carb: 20, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Orange", cat: "Fruit", diet: "veg", price: 15, cal: 60, pro: 1, fat: 0, carb: 15, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Watermelon (2 slices)", cat: "Fruit", diet: "veg", price: 10, cal: 45, pro: 1, fat: 0, carb: 11, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Fruit Salad", cat: "Snack", diet: "veg", price: 30, cal: 130, pro: 2, fat: 0, carb: 32, meal: ["breakfast", "lunch", "dinner"] },
+
             // --- Vegetarian: Snacks ---
-            { name: "Peanuts (roasted 50g)", cat: "Snack", diet: "veg", price: 10, cal: 290, pro: 13, fat: 24, carb: 10 },
-            { name: "Sprouts (1 bowl)", cat: "Snack", diet: "veg", price: 10, cal: 100, pro: 8, fat: 1, carb: 16 },
+            { name: "Peanuts (roasted 50g)", cat: "Snack", diet: "veg", price: 10, cal: 290, pro: 13, fat: 24, carb: 10, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Sprouts (1 bowl)", cat: "Snack", diet: "veg", price: 10, cal: 100, pro: 8, fat: 1, carb: 16, meal: ["breakfast", "lunch", "dinner"] },
+
             // --- Eggetarian ---
-            { name: "Boiled Egg (2 pcs)", cat: "Protein", diet: "egg", price: 16, cal: 140, pro: 12, fat: 10, carb: 1 },
-            { name: "Egg Bhurji", cat: "Protein", diet: "egg", price: 30, cal: 160, pro: 12, fat: 10, carb: 5 },
-            { name: "Omelette", cat: "Breakfast", diet: "egg", price: 20, cal: 130, pro: 10, fat: 9, carb: 2 },
-            { name: "Egg Sandwich", cat: "Breakfast", diet: "egg", price: 30, cal: 250, pro: 14, fat: 10, carb: 28 },
-            { name: "Egg Curry", cat: "Protein", diet: "egg", price: 40, cal: 200, pro: 14, fat: 13, carb: 7 },
-            { name: "Egg Fried Rice", cat: "Staple", diet: "egg", price: 45, cal: 320, pro: 14, fat: 10, carb: 46 },
+            { name: "Boiled Egg (2 pcs)", cat: "Protein", diet: "egg", price: 16, cal: 140, pro: 12, fat: 10, carb: 1, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Egg Bhurji", cat: "Protein", diet: "egg", price: 30, cal: 160, pro: 12, fat: 10, carb: 5, meal: ["breakfast", "lunch", "dinner"] },
+            { name: "Omelette", cat: "Breakfast", diet: "egg", price: 20, cal: 130, pro: 10, fat: 9, carb: 2, meal: ["breakfast"] },
+            { name: "Egg Sandwich", cat: "Breakfast", diet: "egg", price: 30, cal: 250, pro: 14, fat: 10, carb: 28, meal: ["breakfast"] },
+            { name: "Egg Curry", cat: "Protein", diet: "egg", price: 40, cal: 200, pro: 14, fat: 13, carb: 7, meal: ["lunch", "dinner"] },
+            { name: "Egg Fried Rice", cat: "Staple", diet: "egg", price: 45, cal: 320, pro: 14, fat: 10, carb: 46, meal: ["lunch", "dinner"] },
+
             // --- Non-Veg ---
-            { name: "Chicken Curry (150g)", cat: "Protein", diet: "nonveg", price: 70, cal: 270, pro: 28, fat: 14, carb: 6 },
-            { name: "Fish Curry (150g)", cat: "Protein", diet: "nonveg", price: 60, cal: 220, pro: 25, fat: 10, carb: 5 },
-            { name: "Fish Fry (2 pcs)", cat: "Protein", diet: "nonveg", price: 55, cal: 200, pro: 22, fat: 12, carb: 4 },
-            { name: "Chicken Rice (1 plate)", cat: "Staple", diet: "nonveg", price: 80, cal: 380, pro: 28, fat: 10, carb: 42 },
-            { name: "Mutton Curry (100g)", cat: "Protein", diet: "nonveg", price: 90, cal: 300, pro: 26, fat: 18, carb: 4 },
-            { name: "Mutton Biryani", cat: "Staple", diet: "nonveg", price: 120, cal: 450, pro: 30, fat: 18, carb: 48 },
-            { name: "Keema Rice", cat: "Staple", diet: "nonveg", price: 80, cal: 370, pro: 25, fat: 16, carb: 40 },
-            { name: "Prawn Curry (100g)", cat: "Protein", diet: "nonveg", price: 100, cal: 230, pro: 24, fat: 11, carb: 6 },
-            { name: "Chicken Biryani", cat: "Staple", diet: "nonveg", price: 110, cal: 420, pro: 30, fat: 15, carb: 50 },
-            { name: "Butter Chicken", cat: "Protein", diet: "nonveg", price: 100, cal: 310, pro: 28, fat: 17, carb: 10 },
+            { name: "Chicken Curry (150g)", cat: "Protein", diet: "nonveg", price: 70, cal: 270, pro: 28, fat: 14, carb: 6, meal: ["lunch", "dinner"] },
+            { name: "Fish Curry (150g)", cat: "Protein", diet: "nonveg", price: 60, cal: 220, pro: 25, fat: 10, carb: 5, meal: ["lunch", "dinner"] },
+            { name: "Fish Fry (2 pcs)", cat: "Protein", diet: "nonveg", price: 55, cal: 200, pro: 22, fat: 12, carb: 4, meal: ["lunch", "dinner"] },
+            { name: "Chicken Rice (1 plate)", cat: "Staple", diet: "nonveg", price: 80, cal: 380, pro: 28, fat: 10, carb: 42, meal: ["lunch", "dinner"] },
+            { name: "Mutton Curry (100g)", cat: "Protein", diet: "nonveg", price: 90, cal: 300, pro: 26, fat: 18, carb: 4, meal: ["lunch", "dinner"] },
+            { name: "Mutton Biryani", cat: "Staple", diet: "nonveg", price: 120, cal: 450, pro: 30, fat: 18, carb: 48, meal: ["lunch", "dinner"] },
+            { name: "Keema Rice", cat: "Staple", diet: "nonveg", price: 80, cal: 370, pro: 25, fat: 16, carb: 40, meal: ["lunch", "dinner"] },
+            { name: "Prawn Curry (100g)", cat: "Protein", diet: "nonveg", price: 100, cal: 230, pro: 24, fat: 11, carb: 6, meal: ["lunch", "dinner"] },
+            { name: "Chicken Biryani", cat: "Staple", diet: "nonveg", price: 110, cal: 420, pro: 30, fat: 15, carb: 50, meal: ["lunch", "dinner"] },
+            { name: "Butter Chicken", cat: "Protein", diet: "nonveg", price: 100, cal: 310, pro: 28, fat: 17, carb: 10, meal: ["lunch", "dinner"] },
         ];
+
 
 
 
@@ -1841,8 +1892,24 @@
 
 
 
-        let plate = [];
+        let plates = { breakfast: [], lunch: [], dinner: [] };
+        let activeMeal = 'breakfast';
+        let plate = plates[activeMeal];
         let visibleFoods = [...foods];
+
+        function switchMeal(meal) {
+            activeMeal = meal;
+            plate = plates[activeMeal];
+
+            // Update Tab UI
+            document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-${meal}`).classList.add('active');
+
+            // Filter and Re-render
+            filterFood(document.getElementById('searchBox').value || '');
+            renderPlate();
+            updateTotals();
+        }
 
         function filterFood(q) {
             q = q.toLowerCase();
@@ -1853,7 +1920,11 @@
                     f.diet === diet ||
                     (diet === 'egg' && f.diet === 'veg') ||
                     (diet === 'nonveg');
-                return matchText && matchDiet;
+
+                // Meal filtering: Allow if item's meal array includes activeMeal OR if it's dairy/snacks (usually all meals)
+                const matchMeal = f.meal && f.meal.includes(activeMeal);
+
+                return matchText && matchDiet && matchMeal;
             });
             renderFoodList();
         }
@@ -1920,7 +1991,7 @@
             const base = foods[idx];
             if (qty !== 1) {
                 // Clone with scaled nutrition, keep price 0 for free items
-                plate.push({
+                plates[activeMeal].push({
                     ...base,
                     name: `${base.name} ×${qty}`,
                     cal: Math.round(base.cal * qty),
@@ -1930,11 +2001,18 @@
                     price: Math.round(base.price * qty),
                 });
             } else {
-                plate.push(base);
+                plates[activeMeal].push(base);
             }
+            plate = plates[activeMeal];
             renderPlate(); updateTotals();
         }
-        function removeFood(pIdx) { plate.splice(pIdx, 1); renderPlate(); updateTotals(); }
+
+        function removeFood(pIdx) {
+            plates[activeMeal].splice(pIdx, 1);
+            plate = plates[activeMeal];
+            renderPlate();
+            updateTotals();
+        }
 
         function renderPlate() {
             const el = document.getElementById('plateDisplay');
@@ -2153,8 +2231,8 @@
             document.getElementById('budgetInput').value = budget;
             updateTotals();
 
-            // Filter food list by diet
-            renderFoodList();
+            // Filter food list by active meal and diet
+            filterFood(document.getElementById('searchBox').value || '');
 
             // Show personalised banner inside planner section
             updatePlannerBanner();
@@ -2184,8 +2262,8 @@
             if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') searchPrice(); });
         });
 
-        // Init planner (show all foods by default)
-        renderFoodList();
+        // Init planner (show breakfast foods by default)
+        filterFood('');
     </script>
 </body>
 
