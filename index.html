@@ -726,6 +726,102 @@
             color: var(--gray);
         }
 
+        /* ===== FOOD SECTION HEADERS ===== */
+        .food-section-header {
+            font-size: .72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: .5rem .2rem .3rem;
+            border-bottom: 2px solid rgba(0, 0, 0, .06);
+            margin-bottom: .3rem;
+        }
+
+        /* ===== SECTION BOXES ===== */
+        .food-section-box {
+            border-radius: 14px;
+            padding: .8rem .8rem .4rem;
+            margin-bottom: 1rem;
+        }
+
+        .food-section-box.veg-box {
+            background: #f0faf0;
+            border: 1.5px solid #a8e6b0;
+        }
+
+        .food-section-box.dairy-box {
+            background: #fffbf0;
+            border: 1.5px solid #f0d080;
+        }
+
+        .food-section-box.meat-box {
+            background: #fff4f4;
+            border: 1.5px solid #f5a8a8;
+        }
+
+        .food-section-box.veg-box .food-section-header {
+            color: #2e7d32;
+        }
+
+        .food-section-box.dairy-box .food-section-header {
+            color: #b07a00;
+        }
+
+        .food-section-box.meat-box .food-section-header {
+            color: #c0392b;
+        }
+
+        /* ===== VEG / NON-VEG DOTS (FSSAI style) ===== */
+        .veg-dot,
+        .nonveg-dot,
+        .dairy-dot {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            position: relative;
+            flex-shrink: 0;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        .veg-dot {
+            border: 2px solid #2e7d32;
+        }
+
+        .nonveg-dot {
+            border: 2px solid #c0392b;
+        }
+
+        .dairy-dot {
+            border: 2px solid #b07a00;
+        }
+
+        .veg-dot::after,
+        .nonveg-dot::after,
+        .dairy-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .veg-dot::after {
+            background: #2e7d32;
+        }
+
+        .nonveg-dot::after {
+            background: #c0392b;
+        }
+
+        .dairy-dot::after {
+            background: #b07a00;
+        }
+
         .price-section-title {
             font-size: .78rem;
             font-weight: 800;
@@ -1591,8 +1687,15 @@
             { name: "Bhel Puri", cat: "Snack", diet: "veg", price: 20, cal: 180, pro: 4, fat: 5, carb: 30 },
             // --- Vegetarian: Dairy ---
             { name: "Curd (1 bowl)", cat: "Dairy", diet: "veg", price: 15, cal: 70, pro: 5, fat: 3, carb: 6 },
-            { name: "Lassi (1 glass)", cat: "Drink", diet: "veg", price: 20, cal: 120, pro: 5, fat: 4, carb: 18 },
+            { name: "Lassi (1 glass)", cat: "Dairy", diet: "veg", price: 20, cal: 120, pro: 5, fat: 4, carb: 18 },
             { name: "Paneer (50g raw)", cat: "Dairy", diet: "veg", price: 20, cal: 135, pro: 9, fat: 10, carb: 2 },
+            { name: "Milk (1 glass)", cat: "Dairy", diet: "veg", price: 10, cal: 120, pro: 6, fat: 6, carb: 10 },
+            { name: "Ghee (1 tbsp)", cat: "Dairy", diet: "veg", price: 15, cal: 120, pro: 0, fat: 14, carb: 0 },
+            { name: "Butter (1 tbsp)", cat: "Dairy", diet: "veg", price: 10, cal: 100, pro: 0, fat: 11, carb: 0 },
+            { name: "Cheese Slice", cat: "Dairy", diet: "veg", price: 15, cal: 100, pro: 6, fat: 8, carb: 1 },
+            { name: "Buttermilk / Chaas", cat: "Dairy", diet: "veg", price: 10, cal: 60, pro: 3, fat: 2, carb: 8 },
+            { name: "Khoya / Mawa (50g)", cat: "Dairy", diet: "veg", price: 30, cal: 200, pro: 8, fat: 12, carb: 18 },
+            { name: "Fresh Cream (2 tbsp)", cat: "Dairy", diet: "veg", price: 15, cal: 100, pro: 1, fat: 10, carb: 2 },
             // --- Vegetarian: Drinks & Fruits ---
             { name: "Coconut Water", cat: "Drink", diet: "veg", price: 20, cal: 45, pro: 0, fat: 0, carb: 11 },
             { name: "Banana", cat: "Fruit", diet: "veg", price: 8, cal: 90, pro: 1, fat: 0, carb: 22 },
@@ -1764,40 +1867,51 @@
             const meatItems = visibleFoods.filter(f => f.diet === 'egg' || f.diet === 'nonveg');
 
             const sections = [
-                { label: '🥗 Vegetarian', items: vegItems },
-                { label: '🥛 Dairy', items: dairyItems },
-                { label: '🍖 Meat & Eggs', items: meatItems },
+                { label: '🥗 Vegetarian', items: vegItems, boxClass: 'veg-box', dot: 'veg-dot' },
+                { label: '🥛 Dairy', items: dairyItems, boxClass: 'dairy-box', dot: 'dairy-dot' },
+                { label: '🍖 Meat & Eggs', items: meatItems, boxClass: 'meat-box', dot: 'nonveg-dot' },
             ];
 
-            sections.forEach(({ label, items }) => {
+            sections.forEach(({ label, items, boxClass, dot }) => {
                 if (items.length === 0) return;
+
+                // Section box wrapper
+                const box = document.createElement('div');
+                box.className = `food-section-box ${boxClass}`;
+
                 const hdr = document.createElement('div');
                 hdr.className = 'food-section-header';
                 hdr.textContent = label;
-                el.appendChild(hdr);
+                box.appendChild(hdr);
 
                 items.forEach(food => {
                     const idx = foods.indexOf(food);
+                    const isRawDairy = food.cat === 'Dairy' && !food.free;
                     const div = document.createElement('div');
                     div.className = 'food-item';
                     div.innerHTML = `
-                      <div>
-                        <div class="food-name">${food.name}${food.free ? ' <span style="font-size:.7rem;color:var(--green);font-weight:800;">🏠 FREE</span>' : ''}</div>
-                        <div class="food-meta">${food.cal} kcal · ${food.pro}g protein · <em>${food.cat}</em></div>
+                      <div style="display:flex;align-items:flex-start;gap:.3rem">
+                        <span class="${dot}" title="${dot === 'veg-dot' ? 'Vegetarian' : dot === 'dairy-dot' ? 'Dairy' : 'Non-Vegetarian'}"></span>
+                        <div>
+                          <div class="food-name">${food.name}${food.free ? ' <span style="font-size:.7rem;color:var(--green);font-weight:800;">🏠 FREE</span>' : ''}</div>
+                          <div class="food-meta">${food.cal} kcal · ${food.pro}g protein · <em>${food.cat}</em></div>
+                        </div>
                       </div>
                       <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;justify-content:flex-end">
                         ${food.free
-                            ? `<span style="background:#e8f5e9;color:var(--green);border-radius:8px;padding:.22rem .6rem;font-size:.78rem;font-weight:700;">Home Staple</span>
+                            ? `<span style="background:#e8f5e9;color:var(--green);border-radius:8px;padding:.22rem .6rem;font-size:.78rem;font-weight:700;">Staple</span>
                              <input type="number" id="qty-${idx}" min="0.5" max="10" step="0.5" value="1"
                                style="width:52px;border:2px solid #d1fae5;border-radius:8px;padding:.2rem .3rem;font-family:'Nunito',sans-serif;font-size:.85rem;text-align:center;outline:none;color:var(--dark);">
                              <button class="add-btn" onclick="addFood(${idx}, parseFloat(document.getElementById('qty-${idx}').value)||1)">+ Add</button>
                              <button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>`
                             : `<span class="food-price">₹${food.price}</span>
-                             <button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>
+                             ${isRawDairy ? '' : `<button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>`}
                              <button class="add-btn" onclick="addFood(${idx})">+ Add</button>`}
                       </div>`;
-                    el.appendChild(div);
+                    box.appendChild(div);
                 });
+
+                el.appendChild(box);
             });
         }
 
