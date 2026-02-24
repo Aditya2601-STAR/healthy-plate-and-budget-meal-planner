@@ -918,10 +918,211 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ===== PREFERENCES MODAL ===== */
+        .pref-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s;
+        }
+
+        .pref-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .pref-modal {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            max-width: 520px;
+            width: 92%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+            transform: translateY(30px);
+            transition: transform .35s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .pref-overlay.active .pref-modal {
+            transform: translateY(0);
+        }
+
+        .pref-modal h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--dark);
+            margin-bottom: .3rem;
+            text-align: center;
+        }
+
+        .pref-modal .pref-sub {
+            text-align: center;
+            color: var(--gray);
+            font-size: .9rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .pref-section {
+            margin-bottom: 1.4rem;
+        }
+
+        .pref-section label {
+            font-weight: 700;
+            font-size: .88rem;
+            color: var(--dark);
+            margin-bottom: .6rem;
+            display: block;
+        }
+
+        .pref-cards {
+            display: flex;
+            gap: .6rem;
+            flex-wrap: wrap;
+        }
+
+        .pref-card {
+            flex: 1;
+            min-width: 80px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: .7rem .5rem;
+            text-align: center;
+            cursor: pointer;
+            font-size: .82rem;
+            font-weight: 700;
+            transition: all .2s;
+            color: var(--dark);
+        }
+
+        .pref-card .icon {
+            font-size: 1.4rem;
+            display: block;
+            margin-bottom: .3rem;
+        }
+
+        .pref-card:hover {
+            border-color: var(--green);
+            background: var(--green-light);
+        }
+
+        .pref-card.sel {
+            border-color: var(--green);
+            background: var(--green-light);
+            color: var(--green);
+        }
+
+        .pref-card.sel-orange {
+            border-color: var(--orange);
+            background: var(--orange-light);
+            color: #b45309;
+        }
+
+        .pref-row {
+            display: flex;
+            gap: .8rem;
+        }
+
+        .pref-field {
+            flex: 1;
+        }
+
+        .pref-field label {
+            font-weight: 700;
+            font-size: .88rem;
+            margin-bottom: .4rem;
+            display: block;
+        }
+
+        .pref-field input {
+            width: 100%;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: .55rem .8rem;
+            font-family: 'Nunito', sans-serif;
+            font-size: .97rem;
+            outline: none;
+            color: var(--dark);
+        }
+
+        .pref-field input:focus {
+            border-color: var(--green);
+        }
+
+        .pref-submit {
+            width: 100%;
+            background: var(--green);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            padding: .9rem;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: .6rem;
+            transition: background .2s;
+        }
+
+        .pref-submit:hover {
+            background: var(--green-mid);
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- ===== PREFERENCES MODAL ===== -->
+    <div class="pref-overlay" id="prefOverlay">
+        <div class="pref-modal">
+            <h2>🥗 Let's Personalise!</h2>
+            <p class="pref-sub">Tell us a bit about yourself so we can tailor your meal plan</p>
+
+            <div class="pref-section">
+                <label>🎯 What is your fitness goal?</label>
+                <div class="pref-cards" id="goalCards">
+                    <div class="pref-card" onclick="selectPref('goal','gain',this)"><span class="icon">💪</span>Gain
+                        Weight</div>
+                    <div class="pref-card" onclick="selectPref('goal','maintain',this)"><span
+                            class="icon">⚖️</span>Maintain</div>
+                    <div class="pref-card" onclick="selectPref('goal','lose',this)"><span class="icon">🏃</span>Lose
+                        Weight</div>
+                </div>
+            </div>
+
+            <div class="pref-section">
+                <label>🥦 What is your diet preference?</label>
+                <div class="pref-cards" id="dietCards">
+                    <div class="pref-card" onclick="selectPref('diet','veg',this)"><span
+                            class="icon">🥗</span>Vegetarian</div>
+                    <div class="pref-card" onclick="selectPref('diet','egg',this)"><span
+                            class="icon">🥚</span>Eggetarian</div>
+                    <div class="pref-card" onclick="selectPref('diet','nonveg',this)"><span
+                            class="icon">🍗</span>Non-Veg</div>
+                </div>
+            </div>
+
+            <div class="pref-row">
+                <div class="pref-field">
+                    <label>⚖️ Your Weight (kg)</label>
+                    <input type="number" id="prefWeight" placeholder="e.g. 65" min="30" max="150" />
+                </div>
+                <div class="pref-field">
+                    <label>💰 Daily Budget (₹)</label>
+                    <input type="number" id="prefBudget" placeholder="e.g. 100" min="10" />
+                </div>
+            </div>
+
+            <button class="pref-submit" onclick="applyPrefs()">🍽 Build My Meal Plan →</button>
+        </div>
+    </div>
 
     <nav>
         <div class="nav-logo">🥗 Healthy<span>Plate</span></div>
@@ -932,8 +1133,7 @@
             <li><a href="#about">About</a></li>
             <li><a href="#team">Team</a></li>
         </ul>
-        <button class="nav-btn" onclick="document.getElementById('planner').scrollIntoView({behavior:'smooth'})">Try
-            Now</button>
+        <button class="nav-btn" onclick="openPrefModal()">Try Now</button>
     </nav>
 
     <section class="hero">
@@ -942,9 +1142,7 @@
         <p>A smart web-based meal planner that helps students balance nutrition and expenses — built for busy college
             life.</p>
         <div class="hero-btns">
-            <button class="btn-primary"
-                onclick="document.getElementById('planner').scrollIntoView({behavior:'smooth'})">🍽 Start
-                Planning</button>
+            <button class="btn-primary" onclick="openPrefModal()">🍽 Start Planning</button>
             <button class="btn-outline"
                 onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">Learn More</button>
         </div>
@@ -1163,26 +1361,37 @@
     </footer>
 
     <script>
-        // ===== FOOD DATABASE =====
+        // ===== FOOD DATABASE (diet: 'veg' | 'egg' | 'nonveg') =====
         const foods = [
-            { name: "Roti (2 pcs)", cat: "Staple", price: 10, cal: 150, pro: 4, fat: 1, carb: 30 },
-            { name: "Dal (1 bowl)", cat: "Protein", price: 20, cal: 120, pro: 8, fat: 2, carb: 18 },
-            { name: "Rice (1 plate)", cat: "Staple", price: 15, cal: 200, pro: 4, fat: 1, carb: 45 },
-            { name: "Sabzi (Mixed Veg)", cat: "Veggie", price: 25, cal: 90, pro: 3, fat: 4, carb: 12 },
-            { name: "Egg Bhurji", cat: "Protein", price: 30, cal: 160, pro: 12, fat: 10, carb: 5 },
-            { name: "Curd (1 bowl)", cat: "Dairy", price: 15, cal: 70, pro: 5, fat: 3, carb: 6 },
-            { name: "Banana", cat: "Fruit", price: 8, cal: 90, pro: 1, fat: 0, carb: 22 },
-            { name: "Poha (1 plate)", cat: "Breakfast", price: 20, cal: 180, pro: 4, fat: 5, carb: 32 },
-            { name: "Upma", cat: "Breakfast", price: 18, cal: 150, pro: 4, fat: 6, carb: 25 },
-            { name: "Bread + Butter", cat: "Breakfast", price: 15, cal: 200, pro: 4, fat: 8, carb: 28 },
-            { name: "Chana Masala", cat: "Protein", price: 30, cal: 210, pro: 11, fat: 7, carb: 28 },
-            { name: "Paneer Sabzi", cat: "Protein", price: 45, cal: 250, pro: 14, fat: 15, carb: 10 },
-            { name: "Sambar (1 bowl)", cat: "Veggie", price: 15, cal: 80, pro: 4, fat: 2, carb: 14 },
-            { name: "Salad (Mixed)", cat: "Veggie", price: 20, cal: 45, pro: 2, fat: 0, carb: 9 },
-            { name: "Lassi (1 glass)", cat: "Drink", price: 20, cal: 120, pro: 5, fat: 4, carb: 18 },
-            { name: "Chai (1 cup)", cat: "Drink", price: 10, cal: 45, pro: 1, fat: 1, carb: 8 },
-            { name: "Apple", cat: "Fruit", price: 25, cal: 80, pro: 0, fat: 0, carb: 20 },
-            { name: "Boiled Egg", cat: "Protein", price: 10, cal: 70, pro: 6, fat: 5, carb: 1 },
+            // Vegetarian
+            { name: "Roti (2 pcs)", cat: "Staple", diet: "veg", price: 10, cal: 150, pro: 4, fat: 1, carb: 30 },
+            { name: "Dal (1 bowl)", cat: "Protein", diet: "veg", price: 20, cal: 120, pro: 8, fat: 2, carb: 18 },
+            { name: "Rice (1 plate)", cat: "Staple", diet: "veg", price: 15, cal: 200, pro: 4, fat: 1, carb: 45 },
+            { name: "Sabzi (Mixed Veg)", cat: "Veggie", diet: "veg", price: 25, cal: 90, pro: 3, fat: 4, carb: 12 },
+            { name: "Curd (1 bowl)", cat: "Dairy", diet: "veg", price: 15, cal: 70, pro: 5, fat: 3, carb: 6 },
+            { name: "Banana", cat: "Fruit", diet: "veg", price: 8, cal: 90, pro: 1, fat: 0, carb: 22 },
+            { name: "Poha (1 plate)", cat: "Breakfast", diet: "veg", price: 20, cal: 180, pro: 4, fat: 5, carb: 32 },
+            { name: "Upma", cat: "Breakfast", diet: "veg", price: 18, cal: 150, pro: 4, fat: 6, carb: 25 },
+            { name: "Bread + Butter", cat: "Breakfast", diet: "veg", price: 15, cal: 200, pro: 4, fat: 8, carb: 28 },
+            { name: "Chana Masala", cat: "Protein", diet: "veg", price: 30, cal: 210, pro: 11, fat: 7, carb: 28 },
+            { name: "Paneer Sabzi", cat: "Protein", diet: "veg", price: 45, cal: 250, pro: 14, fat: 15, carb: 10 },
+            { name: "Sambar (1 bowl)", cat: "Veggie", diet: "veg", price: 15, cal: 80, pro: 4, fat: 2, carb: 14 },
+            { name: "Salad (Mixed)", cat: "Veggie", diet: "veg", price: 20, cal: 45, pro: 2, fat: 0, carb: 9 },
+            { name: "Lassi (1 glass)", cat: "Drink", diet: "veg", price: 20, cal: 120, pro: 5, fat: 4, carb: 18 },
+            { name: "Chai (1 cup)", cat: "Drink", diet: "veg", price: 10, cal: 45, pro: 1, fat: 1, carb: 8 },
+            { name: "Apple", cat: "Fruit", diet: "veg", price: 25, cal: 80, pro: 0, fat: 0, carb: 20 },
+            { name: "Soya Chunks (1 bowl)", cat: "Protein", diet: "veg", price: 15, cal: 170, pro: 18, fat: 3, carb: 12 },
+            { name: "Rajma (1 bowl)", cat: "Protein", diet: "veg", price: 25, cal: 180, pro: 10, fat: 3, carb: 30 },
+            // Eggetarian
+            { name: "Boiled Egg (2 pcs)", cat: "Protein", diet: "egg", price: 16, cal: 140, pro: 12, fat: 10, carb: 1 },
+            { name: "Egg Bhurji", cat: "Protein", diet: "egg", price: 30, cal: 160, pro: 12, fat: 10, carb: 5 },
+            { name: "Omelette", cat: "Breakfast", diet: "egg", price: 20, cal: 130, pro: 10, fat: 9, carb: 2 },
+            { name: "Egg Sandwich", cat: "Breakfast", diet: "egg", price: 30, cal: 250, pro: 14, fat: 10, carb: 28 },
+            // Non-veg
+            { name: "Chicken Curry (150g)", cat: "Protein", diet: "nonveg", price: 70, cal: 270, pro: 28, fat: 14, carb: 6 },
+            { name: "Fish Curry (150g)", cat: "Protein", diet: "nonveg", price: 60, cal: 220, pro: 25, fat: 10, carb: 5 },
+            { name: "Chicken Rice (1 plate)", cat: "Staple", diet: "nonveg", price: 80, cal: 380, pro: 28, fat: 10, carb: 42 },
+            { name: "Mutton Curry (100g)", cat: "Protein", diet: "nonveg", price: 90, cal: 300, pro: 26, fat: 18, carb: 4 },
         ];
 
         let plate = [];
@@ -1190,7 +1399,15 @@
 
         function filterFood(q) {
             q = q.toLowerCase();
-            visibleFoods = foods.filter(f => f.name.toLowerCase().includes(q) || f.cat.toLowerCase().includes(q));
+            const diet = userPrefs.diet || 'all';
+            visibleFoods = foods.filter(f => {
+                const matchText = f.name.toLowerCase().includes(q) || f.cat.toLowerCase().includes(q);
+                const matchDiet = diet === 'all' ||
+                    f.diet === diet ||
+                    (diet === 'egg' && f.diet === 'veg') ||
+                    (diet === 'nonveg');
+                return matchText && matchDiet;
+            });
             renderFoodList();
         }
 
@@ -1393,13 +1610,76 @@
             }));
         }
 
+        // ===== PREFERENCES MODAL LOGIC =====
+        const userPrefs = { goal: '', diet: '', weight: 0, budget: 100 };
+
+        function openPrefModal() {
+            document.getElementById('prefOverlay').classList.add('active');
+        }
+        function closePrefModal() {
+            document.getElementById('prefOverlay').classList.remove('active');
+        }
+        // Close on backdrop click
+        document.getElementById('prefOverlay').addEventListener('click', function (e) {
+            if (e.target === this) closePrefModal();
+        });
+
+        function selectPref(type, value, el) {
+            // Deselect siblings
+            el.closest('.pref-cards').querySelectorAll('.pref-card').forEach(c => {
+                c.classList.remove('sel', 'sel-orange');
+            });
+            userPrefs[type] = value;
+            el.classList.add(type === 'diet' ? 'sel-orange' : 'sel');
+        }
+
+        function applyPrefs() {
+            const weight = parseFloat(document.getElementById('prefWeight').value);
+            const budget = parseFloat(document.getElementById('prefBudget').value);
+            if (!userPrefs.goal) { alert('Please select your fitness goal.'); return; }
+            if (!userPrefs.diet) { alert('Please select your diet preference.'); return; }
+            if (!weight || weight < 30) { alert('Please enter a valid weight (30+ kg).'); return; }
+            if (!budget || budget < 10) { alert('Please enter a valid budget (₹10+).'); return; }
+
+            userPrefs.weight = weight;
+            userPrefs.budget = budget;
+
+            // Pre-fill budget input in planner
+            document.getElementById('budgetInput').value = budget;
+            updateTotals();
+
+            // Filter food list by diet
+            renderFoodList();
+
+            // Show personalised banner inside planner section
+            updatePlannerBanner();
+
+            closePrefModal();
+            document.getElementById('planner').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updatePlannerBanner() {
+            const goalLabel = { gain: '💪 Gain Weight', maintain: '⚖️ Maintain', lose: '🏃 Lose Weight' };
+            const dietLabel = { veg: '🥗 Vegetarian', egg: '🥚 Eggetarian', nonveg: '🍗 Non-Veg' };
+            let banner = document.getElementById('plannerBanner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'plannerBanner';
+                banner.style.cssText = 'background:var(--green);color:#fff;border-radius:12px;padding:.7rem 1.2rem;margin-bottom:1.2rem;font-size:.88rem;font-weight:700;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;';
+                const plannerTitle = document.querySelector('#planner .section-sub');
+                plannerTitle.insertAdjacentElement('afterend', banner);
+            }
+            const protein = Math.round(userPrefs.weight * (userPrefs.goal === 'gain' ? 2.0 : userPrefs.goal === 'lose' ? 1.4 : 1.6));
+            banner.innerHTML = `🎯 Goal: ${goalLabel[userPrefs.goal]} &nbsp;|&nbsp; ${dietLabel[userPrefs.diet]} &nbsp;|&nbsp; ⚖️ ${userPrefs.weight}kg &nbsp;|&nbsp; 💰 ₹${userPrefs.budget}/meal &nbsp;|&nbsp; 🥩 Target Protein: ~${protein}g/day`;
+        }
+
         // Enter key support
         document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById('priceQuery');
             if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') searchPrice(); });
         });
 
-        // Init planner
+        // Init planner (show all foods by default)
         renderFoodList();
     </script>
 </body>
