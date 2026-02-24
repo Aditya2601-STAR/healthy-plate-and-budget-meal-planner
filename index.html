@@ -340,19 +340,32 @@
                 grid-template-columns: 1fr;
             }
 
-            .planner-panel {
+            /* Only hide top-level panels, not nested ones inside plate column */
+            .planner-layout>.planner-panel {
                 display: none;
-                /* Hide all panels initially on mobile */
             }
 
-            .planner-panel.active-panel {
+            .planner-layout>.planner-panel.active-panel {
                 display: block;
-                /* Only show active one */
             }
 
-            .planner-right {
-                display: contents;
-                /* Let children follow panel rules */
+            /* Make plate column show as block (not flex) on mobile */
+            .planner-panel.plate-column.active-panel {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* On desktop, the plate panel stacks its two child panels vertically */
+        @media(min-width:751px) {
+            .planner-panel.plate-column {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+                background: transparent;
+                box-shadow: none;
+                padding: 0;
             }
         }
 
@@ -1839,7 +1852,7 @@
                         <div id="priceResults" class="price-results" style="max-height: 500px; overflow-y: auto;"></div>
                     </div>
 
-                    <div class="planner-right" id="panel-plate">
+                    <div class="planner-panel plate-column active-panel" id="panel-plate">
                         <div class="planner-panel" style="margin-bottom:1.5rem;">
                             <h3>🪣 Your Budget</h3>
                             <div class="budget-row">
@@ -2501,8 +2514,11 @@
         function revealPlanner() {
             document.getElementById('plannerContent').style.display = 'block';
             updatePlannerBanner();
+            filterFood('');
             renderPlate();
             updateTotals();
+            // On mobile, default to showing the Food panel first
+            if (window.innerWidth <= 750) switchView('food');
             document.getElementById('planner').scrollIntoView({ behavior: 'smooth' });
         }
 
