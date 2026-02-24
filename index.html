@@ -89,6 +89,17 @@
             </ul>
         </div>
 
+        <!-- Live Price Search -->
+        <div class="price-lookup">
+            <h3>🔍 Live Ingredient Price Check</h3>
+            <p class="price-subtitle">Search any ingredient to see its estimated market price</p>
+            <div class="price-search-bar">
+                <input type="text" id="priceQuery" placeholder="e.g. dal, paneer, eggs, rice..." />
+                <button onclick="searchPrice()">Check Price</button>
+            </div>
+            <div id="priceResults" class="price-results"></div>
+        </div>
+
     </section>
 
     <script src="script.js"></script>
