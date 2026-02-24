@@ -1787,17 +1787,39 @@
                       </div>
                       <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;justify-content:flex-end">
                         ${food.free
-                            ? '<span style="background:#e8f5e9;color:var(--green);border-radius:8px;padding:.22rem .6rem;font-size:.78rem;font-weight:700;">Home Staple</span>'
-                            : `<span class="food-price">₹${food.price}</span>`}
-                        <button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>
-                        <button class="add-btn" onclick="addFood(${idx})">+ Add</button>
+                            ? `<span style="background:#e8f5e9;color:var(--green);border-radius:8px;padding:.22rem .6rem;font-size:.78rem;font-weight:700;">Home Staple</span>
+                             <input type="number" id="qty-${idx}" min="0.5" max="10" step="0.5" value="1"
+                               style="width:52px;border:2px solid #d1fae5;border-radius:8px;padding:.2rem .3rem;font-family:'Nunito',sans-serif;font-size:.85rem;text-align:center;outline:none;color:var(--dark);">
+                             <button class="add-btn" onclick="addFood(${idx}, parseFloat(document.getElementById('qty-${idx}').value)||1)">+ Add</button>
+                             <button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>`
+                            : `<span class="food-price">₹${food.price}</span>
+                             <button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>
+                             <button class="add-btn" onclick="addFood(${idx})">+ Add</button>`}
                       </div>`;
                     el.appendChild(div);
                 });
             });
         }
 
-        function addFood(idx) { plate.push(foods[idx]); renderPlate(); updateTotals(); }
+        function addFood(idx, qty) {
+            qty = qty || 1;
+            const base = foods[idx];
+            if (qty !== 1) {
+                // Clone with scaled nutrition, keep price 0 for free items
+                plate.push({
+                    ...base,
+                    name: `${base.name} ×${qty}`,
+                    cal: Math.round(base.cal * qty),
+                    pro: Math.round(base.pro * qty * 10) / 10,
+                    fat: Math.round(base.fat * qty * 10) / 10,
+                    carb: Math.round(base.carb * qty * 10) / 10,
+                    price: Math.round(base.price * qty),
+                });
+            } else {
+                plate.push(base);
+            }
+            renderPlate(); updateTotals();
+        }
         function removeFood(pIdx) { plate.splice(pIdx, 1); renderPlate(); updateTotals(); }
 
         function renderPlate() {
