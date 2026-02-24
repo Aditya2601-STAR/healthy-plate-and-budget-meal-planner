@@ -1852,8 +1852,8 @@
         </div>
 
         <button onclick="skipRecommendations()"
-            style="margin-top:2rem; background:none; border:none; color:var(--gray); text-decoration:underline; cursor:pointer; font-weight:600;">I'll
-            build my own plate from scratch</button>
+            style="margin-top:2rem; background:none; border:none; color:var(--gray); text-decoration:underline; cursor:pointer; font-weight:600; font-family:'Nunito',sans-serif;">I'll
+            skip and build my own plate from scratch</button>
     </div>
 
 
@@ -2040,7 +2040,7 @@
             "Matar Paneer": { time: "25 min", serves: 2, ing: ["200g paneer", "1 cup green peas", "2 tomatoes", "1 onion", "Ginger", "Spices", "Oil"], steps: ["Heat oil, sauté onion till golden.", "Add ginger, tomatoes and cook till soft.", "Add spices, cook 2 min.", "Add peas, simmer 5 min. Add paneer.", "Cook 5 more minutes. Serve hot."] },
             "Dal Makhani": { time: "45 min", serves: 3, ing: ["1 cup whole black urad dal", "Rajma 2 tbsp", "Butter", "Cream", "Tomato puree", "Ginger garlic paste", "Spices"], steps: ["Soak and pressure cook urad dal and rajma for 8 whistles.", "Heat butter, add ginger garlic paste, fry 2 min.", "Add tomato puree and spices. Cook till oil separates.", "Add mashed dal. Simmer on low flame 20 min stirring often.", "Add cream, garnish with butter and serve."] },
             "Soya Chunks": { time: "20 min", serves: 2, ing: ["1 cup soya chunks", "1 onion", "1 tomato", "Spices", "Oil"], steps: ["Boil soya chunks in water 10 min, squeeze and drain.", "Heat oil, add onion and fry till golden.", "Add tomato and spices, cook 3 min.", "Add soya chunks, mix and cook 5 min.", "Serve with roti."] },
-            "Rajma": { time: "40 min", serves: 3, ing: ["1 cup rajma (kidney beans soaked)", "2 onions", "2 tomatoes", "Ginger garlic paste", "Rajma masala", "Oil"], steps: ["Pressure cook rajma with salt for 5-6 whistles.", "Heat oil, fry onions till deep brown.", "Add ginger garlic paste, tomatoes, rajma masala. Cook well.", "Add cooked rajma with its water. Simmer 15 min.", "Garnish with coriander, serve with rice."] },
+            // Continue RECIPES object...
             "Kadhi": { time: "30 min", serves: 2, ing: ["1 cup curd", "2 tbsp besan", "Turmeric", "Mustard seeds", "Red chilli", "Curry leaves", "Salt"], steps: ["Mix curd, besan, turmeric and 2 cups water until smooth.", "Bring to boil on low flame, stir constantly.", "In another pan, heat oil and splutter mustard seeds.", "Add dried red chilli, curry leaves. Pour over kadhi.", "Simmer 10 min. Serve with rice."] },
             "Dum Aloo": { time: "30 min", serves: 2, ing: ["8 baby potatoes", "Curd", "Tomato puree", "Kashmiri red chilli", "Fennel powder", "Oil", "Garam masala"], steps: ["Prick and fry baby potatoes till golden.", "Mix curd with all spices.", "Heat oil, add curd mixture and cook 5 min.", "Add fried potatoes, cover and cook on low flame 15 min.", "Garnish and serve with roti."] },
             "Poha": { time: "15 min", serves: 2, ing: ["2 cups poha (flattened rice)", "1 onion", "Mustard seeds", "Curry leaves", "Green chilli", "Turmeric", "Lemon juice", "Peanuts"], steps: ["Wash poha gently and let it drain for 5 min.", "Heat oil, add mustard seeds and peanuts. Splutter.", "Add curry leaves, green chilli, onion. Fry 2 min.", "Add poha, turmeric, salt. Mix gently.", "Squeeze lemon and serve garnished with coriander."] },
@@ -2103,39 +2103,30 @@
                 const dbMatch = RECIPE_DB.find(r => r.name.toLowerCase() === foodName.toLowerCase()) ||
                     RECIPE_DB.find(r => r.name.toLowerCase().includes(clean.toLowerCase()));
                 if (dbMatch) {
-                    // Estimate nutrition if not present
-                    const estimatedCal = dbMatch.calories || 250; // Default estimate
-                    const estimatedPro = dbMatch.protein || 10; // Default estimate
-                    const estimatedFat = dbMatch.fat || 8; // Default estimate
-                    const estimatedCarb = dbMatch.carbs || 30; // Default estimate
-
                     return {
                         time: dbMatch.time || "25 min",
                         serves: dbMatch.serves || 2,
                         ing: dbMatch.ingredients.split('|').map(s => s.trim()).filter(s => s),
                         steps: dbMatch.instructions.split('.').map(s => s.trim()).filter(s => s.length > 5),
-                        cal: estimatedCal,
-                        pro: estimatedPro,
-                        fat: estimatedFat,
-                        carb: estimatedCarb
+                        cal: dbMatch.calories || 250,
+                        pro: dbMatch.protein || 10,
+                        fat: dbMatch.fat || 8,
+                        carb: dbMatch.carbs || 30
                     };
                 }
             }
             return null;
         }
 
-        // ===== RECIPE MODAL =====
         function showRecipe(foodName) {
             document.getElementById('recipeOverlay').classList.add('active');
             const recipe = findRecipe(foodName);
             if (!recipe) {
-                document.getElementById('recipeContent').innerHTML =
-                    `<div class="recipe-error">😕 No recipe found for "${foodName}".</div>`;
+                document.getElementById('recipeContent').innerHTML = `<div class="recipe-error">😕 No recipe found for "${foodName}".</div>`;
                 return;
             }
             const ingredients = recipe.ing.map(i => `<span class="recipe-ing-tag">${i}</span>`).join('');
-            const steps = recipe.steps.map((s, i) =>
-                `<li><div class="recipe-step-num">${i + 1}</div><div>${s}</div></li>`).join('');
+            const steps = recipe.steps.map((s, i) => `<li><div class="recipe-step-num">${i + 1}</div><div>${s}</div></li>`).join('');
 
             let nutritionInfo = '';
             if (recipe.cal || recipe.pro || recipe.fat || recipe.carb) {
@@ -2167,12 +2158,7 @@
                 <div class="recipe-section-head">👨‍🍳 Steps</div>
                 <ol class="recipe-steps">${steps}</ol>`;
         }
-        function closeRecipe() {
-            document.getElementById('recipeOverlay').classList.remove('active');
-        }
-
-
-
+        function closeRecipe() { document.getElementById('recipeOverlay').classList.remove('active'); }
 
         let plates = { breakfast: [], lunch: [], dinner: [] };
         let activeMeal = 'breakfast';
@@ -2182,35 +2168,23 @@
         function switchMeal(meal) {
             activeMeal = meal;
             plate = plates[activeMeal];
-
-            // Update Tab UI
             document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
             document.getElementById(`tab-${meal}`).classList.add('active');
-
-            // Filter and Re-render
             filterFood(document.getElementById('searchBox').value || '');
             renderPlate();
-            updateTotals(); // Refresh summary bar
+            updateTotals();
         }
 
         function switchView(view) {
-            // Panel visibility
             document.querySelectorAll('.planner-panel, .planner-right').forEach(p => p.classList.remove('active-panel'));
             document.getElementById(`panel-${view}`).classList.add('active-panel');
-
-            // Button active state
             document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`btn-view-${view}`).classList.add('active');
-
-            // Scroll to top of planner section to ensure user sees the content
             document.getElementById('planner').scrollIntoView({ behavior: 'smooth' });
         }
 
         function filterFood(query) {
-            console.log('Filtering:', query);
             const q = query.toLowerCase();
-
-            // Core list filtering
             let filtered = foods.filter(f => {
                 const matchesSearch = f.name.toLowerCase().includes(q) || f.cat.toLowerCase().includes(q);
                 const matchesMeal = f.meal.includes(activeMeal);
@@ -2219,33 +2193,15 @@
                 return matchesSearch && matchesMeal && matchesDiet;
             });
 
-            // Extended DB filtering (only if searching)
             if (q.length > 2 && typeof RECIPE_DB !== 'undefined') {
                 const extended = RECIPE_DB.filter(r => {
-                    const matchesSearch = r.name.toLowerCase().includes(q);
-                    const matchesMeal = r.meal.includes(activeMeal);
-                    const matchesDiet = userPrefs.diet === 'veg' ? r.diet === 'veg' :
-                        userPrefs.diet === 'egg' ? (r.diet === 'veg' || r.diet === 'egg') : true;
-
-                    // Optimization: Check if already in filtered core list
-                    const exists = filtered.some(f => f.name.toLowerCase() === r.name.toLowerCase());
-                    return matchesSearch && matchesMeal && matchesDiet && !exists;
-                }).map(r => ({
-                    name: r.name,
-                    cat: r.category || 'Recipe', // Default category
-                    diet: r.diet || 'veg', // Default diet
-                    price: r.price || 0, // Default price
-                    cal: r.calories || 250, // Estimated calories
-                    pro: r.protein || 10, // Estimated protein
-                    fat: r.fat || 8, // Estimated fat
-                    carb: r.carbs || 30, // Estimated carbs
-                    free: false, // Extended recipes are not free
-                    meal: r.meal,
-                    isExtended: true // Flag for extended recipes
-                }));
+                    const ms = r.name.toLowerCase().includes(q);
+                    const mm = r.meal.includes(activeMeal);
+                    const md = userPrefs.diet === 'veg' ? r.diet === 'veg' : userPrefs.diet === 'egg' ? (r.diet === 'veg' || r.diet === 'egg') : true;
+                    return ms && mm && md && !filtered.some(f => f.name.toLowerCase() === r.name.toLowerCase());
+                }).map(r => ({ ...r, price: r.price || 0, cal: r.calories || 250, pro: r.protein || 10, fat: r.fat || 8, carb: r.carbs || 30, free: false, isExtended: true }));
                 filtered = [...filtered, ...extended];
             }
-
             visibleFoods = filtered;
             renderFoodList();
         }
@@ -2253,58 +2209,33 @@
         function renderFoodList() {
             const listEl = document.getElementById('foodList');
             if (visibleFoods.length === 0) {
-                listEl.innerHTML = `
-                    <div style="grid-column: 1/-1; padding: 3rem; text-align: center; background: #f9fafb; border-radius: 20px; border: 2px dashed #e5e7eb;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
-                        <h3 style="color: #374151; font-weight: 700;">No items found</h3>
-                        <p style="color: #6b7280;">Try searching for something else or broaden your preferences.</p>
-                    </div>`;
+                listEl.innerHTML = `<div style="grid-column:1/-1;padding:3rem;text-align:center;background:#f9fafb;border-radius:20px;border:2px dashed #e5e7eb;">🔍<h3>No items found</h3></div>`;
                 return;
             }
-
-            // Group by category
-            const categories = {};
-            // Performance Limit: only categorize and render first 50 results
             const renderLimit = visibleFoods.slice(0, 50);
-
-            renderLimit.forEach((f, idx) => {
-                if (!categories[f.cat]) categories[f.cat] = [];
-                categories[f.cat].push({ ...f, originalIndex: foods.indexOf(f) === -1 ? -idx - 1 : foods.indexOf(f), isExtended: foods.indexOf(f) === -1 });
-            });
-
             let content = '';
             const sections = [
-                { label: '🥗 Vegetarian', items: renderLimit.filter(f => f.diet === 'veg' && f.cat !== 'Dairy'), boxClass: 'veg-box', dot: 'veg-dot' },
-                { label: '🥛 Dairy', items: renderLimit.filter(f => f.cat === 'Dairy'), boxClass: 'dairy-box', dot: 'dairy-dot' },
-                { label: '🍖 Meat & Eggs', items: renderLimit.filter(f => f.diet === 'egg' || f.diet === 'nonveg'), boxClass: 'meat-box', dot: 'nonveg-dot' },
-                { label: '🍲 Other Recipes', items: renderLimit.filter(f => f.isExtended && !['veg', 'egg', 'nonveg'].includes(f.diet)), boxClass: 'recipe-box', dot: 'recipe-dot' }
+                { label: '🥗 Vegetarian', items: renderLimit.filter(f => f.diet === 'veg' && f.cat !== 'Dairy'), boxClass: 'veg-box' },
+                { label: '🥛 Dairy', items: renderLimit.filter(f => f.cat === 'Dairy'), boxClass: 'dairy-box' },
+                { label: '🍖 Meat & Eggs', items: renderLimit.filter(f => f.diet === 'egg' || f.diet === 'nonveg'), boxClass: 'meat-box' }
             ];
 
-            sections.forEach(({ label, items, boxClass, dot }) => {
+            sections.forEach(({ label, items, boxClass }) => {
                 if (items.length === 0) return;
-
-                content += `<div class="food-section-box ${boxClass}">`;
-                content += `<div class="food-section-header">${label}</div>`;
-                content += `<div class="food-grid">`;
+                content += `<div class="food-section-box ${boxClass}"><div class="food-section-header">${label}</div><div class="food-grid">`;
                 items.forEach(f => {
-                    const idx = f.originalIndex;
-                    const isExtended = f.isExtended;
+                    const idx = foods.indexOf(f);
+                    const isExt = idx === -1;
                     content += `
-                        <div class="food-item ${f.diet}" style="position:relative">
+                        <div class="food-item ${f.diet}">
                             <span class="diet-dot ${f.diet}"></span>
-                            ${isExtended ? '<span style="position:absolute;top:10px;right:10px;font-size:0.6rem;background:rgba(0,0,0,0.05);padding:2px 6px;border-radius:10px;">RECIPE</span>' : ''}
                             <div class="food-info">
-                                <span class="food-name">${f.name}${f.free ? ' <span style="font-size:.7rem;color:var(--green);font-weight:800;">🏠 FREE</span>' : ''}</span>
-                                <div class="food-meta">${f.cal} kcal · ${f.pro}g protein · <em>${f.cat}</em></div>
+                                <span class="food-name">${f.name}${f.free ? ' <small style="color:var(--green)">FREE</small>' : ''}</span>
+                                <div class="food-meta">${f.cal} kcal · ${f.pro}g protein</div>
                             </div>
                             <div class="food-actions">
-                                ${f.free
-                            ? `<input type="number" id="qty-${idx}" min="0.5" max="10" step="0.5" value="1"
-                                       style="width:52px;border:2px solid #d1fae5;border-radius:8px;padding:.2rem .3rem;font-family:'Nunito',sans-serif;font-size:.85rem;text-align:center;outline:none;color:var(--dark);">
-                                     <button class="add-btn" onclick="addFood(${idx}, parseFloat(document.getElementById('qty-${idx}').value)||1)">+ Add</button>`
-                            : `<span class="food-price">₹${f.price}</span>
-                                     <button class="add-btn" onclick="addFood(${idx}${isExtended ? ', -1' : ''})">+ Add</button>`}
-                                <button class="recipe-btn" onclick="showRecipe('${f.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>
+                                ${f.free ? `<input type="number" id="qty-${idx}" value="1" style="width:40px"> <button class="add-btn" onclick="addFood(${idx}, parseFloat(document.getElementById('qty-${idx}').value))">+ Add</button>` : `<span class="food-price">₹${f.price}</span> <button class="add-btn" onclick="addFood(${isExt ? visibleFoods.indexOf(f) : idx}, ${isExt ? '-1' : '1'})">+ Add</button>`}
+                                <button class="recipe-btn" onclick="showRecipe('${f.name.replace(/'/g, "\\'")}')">🍳 Recipe</button>
                             </div>
                         </div>`;
                 });
@@ -2313,58 +2244,28 @@
             listEl.innerHTML = content;
         }
 
-        function addFood(identifier, qtyOrIsExtended = 1) {
+        function addFood(id, qtyOrExt = 1) {
             let item;
-            let qty = 1;
-
-            if (typeof qtyOrIsExtended === 'number' && qtyOrIsExtended !== -1) {
-                // Case 1: Core food item with quantity
-                item = foods[identifier];
-                qty = qtyOrIsExtended;
-            } else if (qtyOrIsExtended === -1) {
-                // Case 2: Extended DB item (identifier is originalIndex from visibleFoods)
-                // We need to find the item in visibleFoods using its originalIndex
-                const foundInVisible = visibleFoods.find(f => f.originalIndex === identifier);
-                if (foundInVisible && foundInVisible.isExtended) {
-                    item = foundInVisible;
-                } else {
-                    // Fallback if not found or not extended (shouldn't happen with correct originalIndex)
-                    item = foods[identifier];
-                }
-            } else {
-                // Case 3: Core food item, no quantity specified (default to 1)
-                item = foods[identifier];
-            }
-
+            if (qtyOrExt === -1) item = visibleFoods[id];
+            else item = foods[id];
             if (!item) return;
 
-            if (qty !== 1 && !item.isExtended) { // Apply quantity scaling only for core items, not extended recipes
-                plates[activeMeal].push({
-                    ...item,
-                    name: `${item.name} ×${qty}`,
-                    cal: Math.round(item.cal * qty),
-                    pro: Math.round(item.pro * qty * 10) / 10,
-                    fat: Math.round(item.fat * qty * 10) / 10,
-                    carb: Math.round(item.carb * qty * 10) / 10,
-                    price: Math.round(item.price * qty),
-                });
-            } else {
-                plates[activeMeal].push({ ...item });
-            }
+            const qty = qtyOrExt > 0 ? qtyOrExt : 1;
+            plates[activeMeal].push({
+                ...item,
+                name: qty > 1 ? `${item.name} ×${qty}` : item.name,
+                cal: Math.round(item.cal * qty),
+                pro: Math.round(item.pro * qty * 10) / 10,
+                price: Math.round(item.price * qty)
+            });
             plate = plates[activeMeal];
             renderPlate();
             updateTotals();
-
-            // Toast feedback
-            const toast = document.createElement('div');
-            toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#10b981;color:white;padding:10px 20px;border-radius:30px;font-weight:700;box-shadow:0 10px 15px rgba(0,0,0,0.1);z-index:10000;';
-            toast.innerText = `✅ Added ${item.name} to ${activeMeal}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
+            showToast(`✅ Added ${item.name}`);
         }
 
-        function removeFood(pIdx) {
-            plates[activeMeal].splice(pIdx, 1);
+        function removeFood(idx) {
+            plates[activeMeal].splice(idx, 1);
             plate = plates[activeMeal];
             renderPlate();
             updateTotals();
@@ -2372,356 +2273,114 @@
 
         function renderPlate() {
             const el = document.getElementById('plateDisplay');
-            if (plate.length === 0) {
-                el.innerHTML = '<div class="empty-plate">🫙<br/>No items added yet.<br/>Select from the food database!</div>';
-                return;
-            }
+            if (plate.length === 0) { el.innerHTML = '<div class="empty-plate">🫙<br/>No items added.</div>'; return; }
             el.innerHTML = plate.map((f, i) => `<div class="plate-tag">${f.name} <button onclick="removeFood(${i})">×</button></div>`).join('');
         }
 
-        // Helper to update progress bars with colors
         function updateBar(id, percent, color) {
             const el = document.getElementById(id);
-            if (!el) return;
-            el.style.width = Math.min(100, percent) + '%';
-            el.style.background = color;
+            if (el) { el.style.width = Math.min(100, percent) + '%'; el.style.background = color; }
         }
 
         function updateTotals() {
             const budget = parseFloat(document.getElementById('budgetInput').value) || 0;
-            // Free staples (Roti, Dal, Rice, Sabzi) are excluded from cost
-            const totalCost = plate.filter(f => !f.free).reduce((s, f) => s + f.price, 0);
-            const totalCal = plate.reduce((s, f) => s + f.cal, 0);
-            const totalPro = plate.reduce((s, f) => s + f.pro, 0);
-            const totalFat = plate.reduce((s, f) => s + f.fat, 0);
-            const totalCarb = plate.reduce((s, f) => s + f.carb, 0);
-            const remaining = budget - totalCost;
+            const tCost = plate.filter(f => !f.free).reduce((s, f) => s + f.price, 0);
+            const tCal = plate.reduce((s, f) => s + (f.cal || 0), 0);
+            const tPro = plate.reduce((s, f) => s + (f.pro || 0), 0);
+            const rem = budget - tCost;
 
-            document.getElementById('totalCost').textContent = `₹${totalCost}`;
+            document.getElementById('totalCost').innerText = `₹${tCost}`;
             const remEl = document.getElementById('remaining');
-            remEl.textContent = `₹${remaining}`;
-            remEl.className = 'val' + (remaining < 0 ? ' warn' : '');
+            remEl.innerText = `₹${rem}`;
+            remEl.className = 'val' + (rem < 0 ? ' warn' : '');
 
-            const pct = (v, max) => Math.min(100, Math.round(v / max * 100));
-            document.getElementById('barCal').style.width = pct(totalCal, 600) + '%';
-            document.getElementById('barPro').style.width = pct(totalPro, 40) + '%';
-            document.getElementById('barFat').style.width = pct(totalFat, 30) + '%';
-            document.getElementById('barCarb').style.width = pct(totalCarb, 100) + '%';
-            document.getElementById('valCal').textContent = totalCal + ' kcal';
-            document.getElementById('valPro').textContent = totalPro + ' g';
-            document.getElementById('valFat').textContent = `${Math.round(totalFat)} g`;
-            document.getElementById('valCarb').textContent = `${Math.round(totalCarb)} g`;
+            const pTarget = Math.round(userPrefs.weight * (userPrefs.goal === 'gain' ? 2.0 : 1.6));
+            updateBar('barCal', (tCal / 1000) * 100, tCal > 1000 ? 'var(--orange)' : 'var(--green)');
+            updateBar('barPro', (tPro / pTarget) * 100, tPro < pTarget ? 'var(--orange)' : 'var(--green)');
+            document.getElementById('valCal').innerText = tCal + ' kcal';
+            document.getElementById('valPro').innerText = tPro + ' g';
 
-            // Update bars
-            const proteinTarget = Math.round(userPrefs.weight * (userPrefs.goal === 'gain' ? 2.0 : userPrefs.goal === 'lose' ? 1.4 : 1.6));
-            updateBar('barCal', (totalCal / 1000) * 100, totalCal > 1000 ? 'var(--orange)' : 'var(--green)');
-            updateBar('barPro', (totalPro / proteinTarget) * 100, totalPro < proteinTarget ? 'var(--orange)' : 'var(--green)');
-            updateBar('barFat', (totalFat / 70) * 100, totalFat > 70 ? 'var(--orange)' : 'var(--green)');
-            updateBar('barCarb', (totalCarb / 250) * 100, totalCarb > 250 ? 'var(--orange)' : 'var(--green)');
-
-            // Floating Summary Update
-            document.getElementById('floatCost').innerText = `₹${totalCost}`;
-            document.getElementById('floatCal').innerText = Math.round(totalCal);
-            document.getElementById('floatPro').innerText = `${Math.round(totalPro)}g`;
-
-            if (totalCost > budget) {
-                document.getElementById('floatCost').classList.add('warn');
-            } else {
-                document.getElementById('floatCost').classList.remove('warn');
-            }
-
-            const suggBox = document.getElementById('suggBox');
-            const suggestions = [];
-            if (remaining < 0) suggestions.push('⚠️ <strong>Over budget!</strong> Try replacing Paneer with Dal or Egg Bhurji to save ₹15–20.');
-            if (totalPro < 15 && plate.length > 0) suggestions.push('💡 Protein is low. Add <strong>Dal, Boiled Egg, or Chana Masala</strong> to boost it.');
-            if (totalCal < 300 && plate.length > 0) suggestions.push('💡 Calories are quite low. Consider adding <strong>Rice or Roti</strong>.');
-            if (totalCal > 550) suggestions.push('⚠️ High calorie meal! Consider replacing one item with a <strong>Salad or Fruit</strong>.');
-            if (plate.filter(f => f.cat === 'Veggie').length === 0 && plate.length > 1) suggestions.push('🥦 No vegetables! Add <strong>Sabzi or Salad</strong> for a balanced plate.');
-
-            if (suggestions.length > 0) {
-                suggBox.style.display = 'block';
-                suggBox.innerHTML = '<strong>💬 Smart Suggestions:</strong><br>' + suggestions.join('<br>');
-            } else if (plate.length > 0) {
-                suggBox.style.display = 'block';
-                suggBox.innerHTML = '✅ <strong>Great meal!</strong> Your plate looks balanced and within budget.';
-            } else {
-                suggBox.style.display = 'none';
-            }
+            document.getElementById('floatCost').innerText = `₹${tCost}`;
+            document.getElementById('floatCal').innerText = Math.round(tCal);
+            document.getElementById('floatPro').innerText = `${Math.round(tPro)}g`;
+            if (tCost > budget) document.getElementById('floatCost').classList.add('warn');
+            else document.getElementById('floatCost').classList.remove('warn');
         }
 
-        // ===== LIVE PRICE SEARCH APIs =====
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#10b981;color:white;padding:10px 20px;border-radius:30px;font-weight:700;z-index:10000;';
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+
         const SPOONACULAR_KEY = '1562b6de6d5c492ea09b23f6d688cd90';
         const DATA_GOV_KEY = '579b464db66ec23bdd00000131f9a32ca0424b8f45573d97b3ee0d19';
         const USD_TO_INR = 83;
 
-        const DAIRY_PRICES = [
-            { name: 'Cow Milk (Maharashtra)', keywords: ['milk', 'cow milk'], price: '₹60/litre', icon: '🥛' },
-            { name: 'Buffalo Milk', keywords: ['buffalo milk'], price: '₹70–₹80/litre', icon: '🥛' },
-            { name: 'Toned Milk (Packaged)', keywords: ['toned milk', 'amul milk', 'packaged milk'], price: '₹55–₹58/litre', icon: '🥛' },
-            { name: 'Paneer', keywords: ['paneer'], price: '₹380–₹420/kg', icon: '🧀' },
-            { name: 'Curd / Dahi', keywords: ['curd', 'dahi', 'yogurt', 'yoghurt'], price: '₹60–₹80/500g', icon: '🥛' },
-            { name: 'Ghee', keywords: ['ghee'], price: '₹600–₹700/500g', icon: '🍶' },
-            { name: 'Butter (Amul)', keywords: ['butter'], price: '₹58–₹65/100g', icon: '🧈' },
-            { name: 'Cheese (Processed)', keywords: ['cheese'], price: '₹180–₹220/200g', icon: '🧀' },
-            { name: 'Buttermilk / Chaas', keywords: ['buttermilk', 'chaas', 'lassi'], price: '₹20–₹30/200ml', icon: '🥛' },
-            { name: 'Skimmed Milk Powder', keywords: ['milk powder', 'skimmed milk'], price: '₹380–₹420/kg', icon: '🥛' },
-            { name: 'Eggs (Chicken)', keywords: ['egg', 'eggs'], price: '₹6–₹8/egg (₹72–₹96/dozen)', icon: '🥚' },
-        ];
-
-        function lookupDairyPrice(query) {
-            const q = query.toLowerCase().trim();
-            return DAIRY_PRICES.filter(item => item.keywords.some(k => q.includes(k) || k.includes(q)));
-        }
-
         async function searchPrice() {
-            const query = document.getElementById('priceQuery').value.trim();
-            const resultsDiv = document.getElementById('priceResults');
-            if (!query) { resultsDiv.innerHTML = '<p class="price-error">Please enter an ingredient name.</p>'; return; }
-            resultsDiv.innerHTML = '<p class="price-loading">⏳ Fetching live Indian market prices...</p>';
-
-            try {
-                const [mandiResult, nutritionResult] = await Promise.allSettled([
-                    fetchAgmarknetPrices(query),
-                    fetchSpoonacularNutrition(query)
-                ]);
-
-                let html = '';
-                const mandiData = mandiResult.status === 'fulfilled' ? mandiResult.value : [];
-
-                if (mandiData.length > 0) {
-                    html += '<div class="price-section-title">📊 Indian Market (Mandi) Prices</div>';
-                    html += mandiData.map(r => `
-        <div class="price-card market-card">
-          <div class="market-icon">🏪</div>
-          <div class="price-info">
-            <span class="price-name">${r.commodity} <small style="color:var(--gray)">${r.variety ? '— ' + r.variety : ''}</small></span>
-            <span class="price-location">📍 ${r.market}, ${r.state}</span>
-            <span class="price-amount">~₹${Math.round(r.modal_price / 100)}<small>/kg</small></span>
-            <span class="price-range">Range: ₹${Math.round(r.min_price / 100)} – ₹${Math.round(r.max_price / 100)}/kg &nbsp;|&nbsp; ${r.date}</span>
-          </div>
-        </div>`).join('');
-                } else {
-                    const dairyMatches = lookupDairyPrice(query);
-                    if (dairyMatches.length > 0) {
-                        html += '<div class="price-section-title">🥛 Indian Dairy &amp; Retail Prices</div>';
-                        html += dairyMatches.map(d => `
-          <div class="price-card dairy-card">
-            <div class="market-icon">${d.icon}</div>
-            <div class="price-info">
-              <span class="price-name">${d.name}</span>
-              <span class="price-amount dairy-price">${d.price}</span>
-              <span class="price-range">📍 Indian retail market estimate</span>
-            </div>
-          </div>`).join('');
-                    } else {
-                        html += '<p class="price-note">ℹ️ No mandi data found. Try: rice, dal, wheat, tomato, milk, paneer, eggs, curd, ghee.</p>';
-                    }
-                }
-
-                const nutritionData = nutritionResult.status === 'fulfilled' ? nutritionResult.value : [];
-                if (nutritionData.length > 0) {
-                    html += '<div class="price-section-title mt">🥗 Nutrition Info (per 100g)</div>';
-                    html += nutritionData.map(item => `
-        <div class="price-card nutrition-card">
-          ${item.img ? `<img src="${item.img}" alt="${item.name}" class="price-img"/>` : '<div class="market-icon">🥘</div>'}
-          <div class="price-info">
-            <span class="price-name">${item.name.charAt(0).toUpperCase() + item.name.slice(1)}</span>
-            ${item.calories ? `<span class="price-range">🔥 Calories: ${item.calories} kcal</span>` : ''}
-            ${item.protein ? `<span class="price-range">💪 Protein: ${item.protein}g</span>` : ''}
-            ${item.costINR ? `<span class="price-amount">~₹${item.costINR}<small>/100g</small> <small style="color:var(--gray)">(global est.)</small></span>` : ''}
-          </div>
-        </div>`).join('');
-                }
-
-                resultsDiv.innerHTML = html || '<p class="price-error">No results found. Try: rice, dal, paneer, milk, eggs.</p>';
-            } catch (err) {
-                resultsDiv.innerHTML = '<p class="price-error">⚠️ Could not fetch prices. Check your connection.</p>';
-            }
-        }
-
-        async function fetchAgmarknetPrices(query) {
+            const query = document.getElementById('priceQuery').value;
+            const resDiv = document.getElementById('priceResults');
+            resDiv.innerHTML = '<p>Loading...</p>';
             const url = `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=${DATA_GOV_KEY}&format=json&filters[commodity]=${encodeURIComponent(query)}&limit=4`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (!data.records || data.records.length === 0) return [];
-            return data.records.map(r => ({
-                commodity: r.commodity, variety: r.variety || '',
-                market: r.market, state: r.state,
-                min_price: parseFloat(r.min_price) || 0,
-                max_price: parseFloat(r.max_price) || 0,
-                modal_price: parseFloat(r.modal_price) || 0,
-                date: r.arrival_date || ''
-            }));
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (!data.records || data.records.length === 0) { resDiv.innerHTML = '<p>No mandi data.</p>'; return; }
+                resDiv.innerHTML = data.records.map(r => `<div class="price-card market-card">📍 ${r.market}: ₹${Math.round(r.modal_price / 100)}/kg</div>`).join('');
+            } catch (e) { resDiv.innerHTML = '<p>Error.</p>'; }
         }
-
-        async function fetchSpoonacularNutrition(query) {
-            const res = await fetch(`https://api.spoonacular.com/food/ingredients/search?query=${encodeURIComponent(query)}&number=2&apiKey=${SPOONACULAR_KEY}`);
-            const data = await res.json();
-            if (!data.results || data.results.length === 0) return [];
-            return await Promise.all(data.results.map(async item => {
-                const info = await (await fetch(`https://api.spoonacular.com/food/ingredients/${item.id}/information?amount=100&unit=grams&apiKey=${SPOONACULAR_KEY}`)).json();
-                const costUSD = info.estimatedCost ? info.estimatedCost.value / 100 : null;
-                const calories = info.nutrition?.nutrients?.find(n => n.name === 'Calories')?.amount;
-                const protein = info.nutrition?.nutrients?.find(n => n.name === 'Protein')?.amount;
-                return {
-                    name: item.name,
-                    img: item.image ? `https://spoonacular.com/cdn/ingredients_100x100/${item.image}` : null,
-                    costINR: costUSD ? Math.round(costUSD * USD_TO_INR) : null,
-                    calories: calories ? Math.round(calories) : null,
-                    protein: protein ? Math.round(protein * 10) / 10 : null
-                };
-            }));
-        }
-
-
-        // ===== PREFERENCES MODAL LOGIC =====
 
         const userPrefs = { goal: '', diet: '', weight: 0, budget: 100 };
-
-        function openPrefModal() {
-            document.getElementById('prefOverlay').classList.add('active');
-        }
-        function closePrefModal() {
-            document.getElementById('prefOverlay').classList.remove('active');
-        }
-        // Close on backdrop click
-        document.getElementById('prefOverlay').addEventListener('click', function (e) {
-            if (e.target === this) closePrefModal();
-        });
-
-        function selectPref(type, value, el) {
-            // Deselect siblings
-            el.closest('.pref-cards').querySelectorAll('.pref-card').forEach(c => {
-                c.classList.remove('sel', 'sel-orange');
-            });
-            userPrefs[type] = value;
-            el.classList.add(type === 'diet' ? 'sel-orange' : 'sel');
+        function openPrefModal() { document.getElementById('prefOverlay').classList.add('active'); }
+        function closePrefModal() { document.getElementById('prefOverlay').classList.remove('active'); }
+        function selectPref(t, v, el) {
+            el.closest('.pref-cards').querySelectorAll('.pref-card').forEach(c => c.classList.remove('sel', 'sel-orange'));
+            userPrefs[t] = v; el.classList.add(t === 'diet' ? 'sel-orange' : 'sel');
         }
 
         function applyPrefs() {
-            const weight = parseFloat(document.getElementById('prefWeight').value);
-            const budget = parseFloat(document.getElementById('prefBudget').value);
-            if (!userPrefs.goal) { alert('Please select your fitness goal.'); return; }
-            if (!userPrefs.diet) { alert('Please select your diet preference.'); return; }
-            if (!weight || weight < 30) { alert('Please enter a valid weight (30+ kg).'); return; }
-            if (!budget || budget < 10) { alert('Please enter a valid budget (₹10+).'); return; }
-
-            userPrefs.weight = weight;
-            userPrefs.budget = budget;
-
-            // Pre-fill budget input in planner
-            document.getElementById('budgetInput').value = budget;
-            updateTotals();
-
-            // Filter food list by active meal and diet
-            filterFood(document.getElementById('searchBox').value || '');
-
-            // Show personalised banner inside planner section
-            updatePlannerBanner();
-
-            // Instead of showing planner, show recommendations
+            userPrefs.weight = parseFloat(document.getElementById('prefWeight').value);
+            userPrefs.budget = parseFloat(document.getElementById('prefBudget').value);
+            document.getElementById('budgetInput').value = userPrefs.budget;
             generateRecommendations();
-
             closePrefModal();
-            // document.getElementById('planner').scrollIntoView({ behavior: 'smooth' }); // Don't scroll yet
         }
 
         let currentRecommendations = [];
-
         function generateRecommendations() {
             const grid = document.getElementById('recoGrid');
-            document.getElementById('recoGoalText').innerText = userPrefs.goal === 'gain' ? 'Gain Weight' : userPrefs.goal === 'lose' ? 'Lose Weight' : 'Maintain';
+            document.getElementById('recoGoalText').innerText = userPrefs.goal;
             document.getElementById('recoBudgetText').innerText = userPrefs.budget;
 
-            // Logic to pick items
-            const pool = foods.filter(f => {
-                const dietMatch = userPrefs.diet === 'veg' ? f.diet === 'veg' :
-                    userPrefs.diet === 'egg' ? (f.diet === 'veg' || f.diet === 'egg') : true;
-                return dietMatch;
-            });
+            const pool = foods.filter(f => userPrefs.diet === 'veg' ? f.diet === 'veg' : true);
+            const plan = { title: "Balanced", items: [pool[0], pool[1], pool[2]], tag: "Best" };
+            currentRecommendations = [plan, plan, plan];
 
-            const staples = pool.filter(f => f.free);
-            const proteinItems = pool.filter(f => !f.free && (f.pro >= 10 || f.cat === 'Dairy'));
-            const lightItems = pool.filter(f => !f.free && f.cal < 200);
-
-            // 1. Budget Plan (Cheap staples)
-            const plan1 = {
-                title: "💰 Budget Saver",
-                desc: "Focuses on filling staples and high-protein dal.",
-                items: [
-                    staples.find(f => f.name.includes('Dal')) || pool[0],
-                    staples.find(f => f.name.includes('Rice')) || pool[1],
-                    pool.find(f => f.name.includes('Cucumber')) || pool[2]
-                ].filter(Boolean),
-                tag: "Cheapest"
-            };
-
-            // 2. Balanced Plan (Optimal mix)
-            const plan2 = {
-                title: "⚖️ Balanced Choice",
-                desc: "Great mix of fiber, protein, and energy.",
-                items: [
-                    staples.find(f => f.name.includes('Roti')) || pool[0],
-                    pool.find(f => f.name.includes('Chana')) || pool.find(f => f.pro > 8),
-                    pool.find(f => f.cat === 'Fruit') || pool[3]
-                ].filter(Boolean),
-                tag: "Most Popular",
-                best: true
-            };
-
-            // 3. Power Plan (Goal Oriented)
-            const isGain = userPrefs.goal === 'gain';
-            const plan3 = {
-                title: isGain ? "💪 Power Builder" : "🏃 Lean Pack",
-                desc: isGain ? "High protein and calories for gains." : "Low calorie, high protein for cutting.",
-                items: [
-                    isGain ? (pool.find(f => f.name.includes('Paneer')) || pool.find(f => f.pro > 12)) : pool.find(f => f.name.includes('Sprouts')),
-                    staples.find(f => f.name.includes('Rice')) || staples[0],
-                    pool.find(f => f.name.includes('Curd')) || pool.find(f => f.cat === 'Dairy')
-                ].filter(Boolean),
-                tag: isGain ? "High Energy" : "Lean Choice"
-            };
-
-            currentRecommendations = [plan1, plan2, plan3];
-
-            grid.innerHTML = currentRecommendations.map((p, i) => {
-                const totalCost = p.items.filter(f => !f.free).reduce((s, f) => s + f.price, 0);
-                const totalCal = p.items.reduce((s, f) => s + f.cal, 0);
-                return `
-                    <div class="reco-card ${p.best ? 'best' : ''}" onclick="selectRecommendation(${i})">
-                        ${p.tag ? `<div class="reco-tag">${p.tag}</div>` : ''}
-                        <h4>${p.title}</h4>
-                        <p style="font-size:.8rem;color:var(--gray);margin:0;">${p.desc}</p>
-                        <ul class="reco-items">
-                            ${p.items.map(item => `<li>✅ ${item.name}</li>`).join('')}
-                        </ul>
-                        <div class="reco-stats">
-                            <span>₹${totalCost}</span>
-                            <span>${totalCal} kcal</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
+            grid.innerHTML = currentRecommendations.map((p, i) => `
+                <div class="reco-card" onclick="selectRecommendation(${i})">
+                    <h4>${p.title}</h4>
+                    <ul>${p.items.map(it => `<li>✅ ${it.name}</li>`).join('')}</ul>
+                </div>`).join('');
             document.getElementById('recoOverlay').classList.add('active');
         }
 
         function selectRecommendation(idx) {
             const plan = currentRecommendations[idx];
-            plates[activeMeal] = plan.items.map(item => ({ ...item }));
-            plate = plates[activeMeal];
-
-            document.getElementById('recoOverlay').classList.remove('active');
-            revealPlanner();
-        }
-
-        function skipRecommendations() {
-            plates[activeMeal] = [];
+            plates[activeMeal] = plan.items.map(it => ({ ...it }));
             plate = plates[activeMeal];
             document.getElementById('recoOverlay').classList.remove('active');
             revealPlanner();
+
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--green);color:white;padding:15px 25px;border-radius:50px;font-weight:800;z-index:10000;animation:slideDown 0.5s ease;';
+            toast.innerHTML = `🚀 Plan Started! You can now add more items or search 6000+ recipes below.`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
         }
 
+        function skipRecommendations() { revealPlanner(); }
         function revealPlanner() {
             document.getElementById('plannerContent').style.display = 'block';
             updatePlannerBanner();
@@ -2731,28 +2390,12 @@
         }
 
         function updatePlannerBanner() {
-            const goalLabel = { gain: '💪 Gain Weight', maintain: '⚖️ Maintain', lose: '🏃 Lose Weight' };
-            const dietLabel = { veg: '🥗 Vegetarian', egg: '🥚 Eggetarian', nonveg: '🍗 Non-Veg' };
-            let banner = document.getElementById('plannerBanner');
-            if (!banner) {
-                banner = document.createElement('div');
-                banner.id = 'plannerBanner';
-                banner.style.cssText = 'background:var(--green);color:#fff;border-radius:12px;padding:.7rem 1.2rem;margin-bottom:1.2rem;font-size:.88rem;font-weight:700;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;';
-                const plannerTitle = document.querySelector('#planner .section-sub');
-                plannerTitle.insertAdjacentElement('afterend', banner);
-            }
-            const protein = Math.round(userPrefs.weight * (userPrefs.goal === 'gain' ? 2.0 : userPrefs.goal === 'lose' ? 1.4 : 1.6));
-            banner.innerHTML = `🎯 Goal: ${goalLabel[userPrefs.goal]} &nbsp;|&nbsp; ${dietLabel[userPrefs.diet]} &nbsp;|&nbsp; ⚖️ ${userPrefs.weight}kg &nbsp;|&nbsp; 💰 ₹${userPrefs.budget}/meal &nbsp;|&nbsp; 🥩 Target Protein: ~${protein}g/day`;
+            const banner = document.getElementById('plannerBanner') || document.createElement('div');
+            banner.id = 'plannerBanner';
+            banner.style.cssText = 'background:var(--green);color:#fff;border-radius:12px;padding:.7rem;margin-bottom:1rem;font-weight:700;';
+            document.querySelector('#planner .section-sub').insertAdjacentElement('afterend', banner);
+            banner.innerText = `🎯 Goal: ${userPrefs.goal} | 💰 ₹${userPrefs.budget}`;
         }
-
-        // Enter key support
-        document.addEventListener('DOMContentLoaded', () => {
-            const el = document.getElementById('priceQuery');
-            if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') searchPrice(); });
-        });
-
-        // Init planner (show breakfast foods by default)
-        filterFood('');
     </script>
 </body>
 
