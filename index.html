@@ -1601,6 +1601,55 @@
         .pref-submit:hover {
             background: var(--green-mid);
         }
+
+        /* Recommendation UI Enhancements */
+        .reco-card {
+            position: relative;
+            background: var(--white);
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 1.8rem 1.5rem;
+            transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .reco-card:hover {
+            border-color: var(--green);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15);
+        }
+
+        .reco-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--green-light);
+            color: var(--green);
+            font-size: .7rem;
+            font-weight: 800;
+            padding: .3rem .7rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .reco-select-btn {
+            width: 100%;
+            background: #f3f4f6;
+            color: var(--dark);
+            border: none;
+            border-radius: 10px;
+            padding: .6rem;
+            font-weight: 700;
+            font-size: .85rem;
+            margin-top: 1rem;
+            transition: all .2s;
+        }
+
+        .reco-card:hover .reco-select-btn {
+            background: var(--green);
+            color: white;
+        }
     </style>
 </head>
 
@@ -1643,6 +1692,18 @@
                             class="icon">🥚</span>Eggetarian</div>
                     <div class="pref-card" onclick="selectPref('diet','nonveg',this)"><span
                             class="icon">🍗</span>Non-Veg</div>
+                </div>
+            </div>
+
+            <div class="pref-section">
+                <label>🕒 Which meal are you planning for?</label>
+                <div class="pref-cards" id="mealTypeCards">
+                    <div class="pref-card" onclick="selectPref('mealType','breakfast',this)"><span
+                            class="icon">🌅</span>Breakfast</div>
+                    <div class="pref-card" onclick="selectPref('mealType','lunch',this)"><span
+                            class="icon">☀️</span>Lunch</div>
+                    <div class="pref-card" onclick="selectPref('mealType','dinner',this)"><span
+                            class="icon">🌙</span>Dinner</div>
                 </div>
             </div>
 
@@ -2332,7 +2393,7 @@
             } catch (e) { resDiv.innerHTML = '<p>Error.</p>'; }
         }
 
-        const userPrefs = { goal: '', diet: '', weight: 0, budget: 100 };
+        const userPrefs = { goal: '', diet: '', weight: 0, budget: 100, mealType: '' };
         function openPrefModal() { document.getElementById('prefOverlay').classList.add('active'); }
         function closePrefModal() { document.getElementById('prefOverlay').classList.remove('active'); }
         function selectPref(t, v, el) {
@@ -2341,8 +2402,12 @@
         }
 
         function applyPrefs() {
-            userPrefs.weight = parseFloat(document.getElementById('prefWeight').value);
-            userPrefs.budget = parseFloat(document.getElementById('prefBudget').value);
+            if (!userPrefs.goal || !userPrefs.diet || !userPrefs.mealType) {
+                alert('Please select your goal, diet, and meal type to continue!');
+                return;
+            }
+            userPrefs.weight = parseFloat(document.getElementById('prefWeight').value) || 60;
+            userPrefs.budget = parseFloat(document.getElementById('prefBudget').value) || 100;
             document.getElementById('budgetInput').value = userPrefs.budget;
             generateRecommendations();
             closePrefModal();
@@ -2354,14 +2419,66 @@
             document.getElementById('recoGoalText').innerText = userPrefs.goal;
             document.getElementById('recoBudgetText').innerText = userPrefs.budget;
 
-            const pool = foods.filter(f => userPrefs.diet === 'veg' ? f.diet === 'veg' : true);
-            const plan = { title: "Balanced", items: [pool[0], pool[1], pool[2]], tag: "Best" };
-            currentRecommendations = [plan, plan, plan];
+            // Update main planner's active meal to match preference
+            switchMeal(userPrefs.mealType);
+
+            // Filter foods by diet and selected meal type
+            const pool = foods.filter(f => {
+                const matchesDiet = userPrefs.diet === 'veg' ? f.diet === 'veg' :
+                    userPrefs.diet === 'egg' ? (f.diet === 'veg' || f.diet === 'egg') : true;
+                const matchesMeal = f.meal.includes(userPrefs.mealType);
+                return matchesDiet && matchesMeal;
+            });
+
+            // If for some reason we have no foods (shouldn't happen with current DB), use all meal matches
+            const safePool = pool.length > 0 ? pool : foods.filter(f => f.meal.includes(userPrefs.mealType));
+
+            // Helper to pick diverse items within budget
+            const pickItems = (count, filterFn) => {
+                const filtered = safePool.filter(filterFn);
+                // Shuffle for variety
+                return [...filtered].sort(() => 0.5 - Math.random()).slice(0, count);
+            };
+
+            const budgetLimit = userPrefs.budget * 0.9; // Leave some buffer
+
+            // Plan 1: Economy Plan (low cost, staple focused)
+            const lowCostItems = pickItems(3, f => f.price <= 25);
+            const economyPlan = {
+                title: "💰 Economy Plan",
+                items: lowCostItems,
+                tag: "Budget Friendly"
+            };
+
+            // Plan 2: Balanced Plan (mix of categories)
+            const balancedItems = [
+                ...pickItems(1, f => f.cat === 'Staple' || f.cat === 'Breakfast'),
+                ...pickItems(1, f => f.cat === 'Protein' || f.cat === 'Dairy'),
+                ...pickItems(1, f => f.cat === 'Veggie' || f.cat === 'Snack')
+            ];
+            const balancedPlan = {
+                title: "⚖️ Balanced Mix",
+                items: balancedItems.filter(i => i), // remove nulls 
+                tag: "Most Popular"
+            };
+
+            // Plan 3: Protein Boost (focused on higher protein items)
+            const proteinItems = pickItems(3, f => f.pro >= 8);
+            const proteinPlan = {
+                title: "🥩 Protein Boost",
+                items: proteinItems,
+                tag: "Fitness Goal"
+            };
+
+            currentRecommendations = [economyPlan, balancedPlan, proteinPlan];
 
             grid.innerHTML = currentRecommendations.map((p, i) => `
                 <div class="reco-card" onclick="selectRecommendation(${i})">
+                    <span class="reco-badge">${p.tag}</span>
                     <h4>${p.title}</h4>
+                    <p style="font-size:.8rem;color:var(--gray);margin-bottom:.8rem;">Total: ₹${p.items.reduce((s, f) => s + f.price, 0)} · ${Math.round(p.items.reduce((s, f) => s + f.cal, 0))} kcal</p>
                     <ul>${p.items.map(it => `<li>✅ ${it.name}</li>`).join('')}</ul>
+                    <button class="reco-select-btn">Select This Plan</button>
                 </div>`).join('');
             document.getElementById('recoOverlay').classList.add('active');
         }
