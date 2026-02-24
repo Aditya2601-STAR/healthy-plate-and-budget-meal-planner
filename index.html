@@ -919,7 +919,190 @@
             }
         }
 
-        /* ===== PREFERENCES MODAL ===== */
+        /* ===== RECIPE MODAL ===== */
+        .recipe-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s;
+        }
+
+        .recipe-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .recipe-modal {
+            background: var(--white);
+            border-radius: 24px 24px 0 0;
+            padding: 2rem;
+            width: 100%;
+            max-width: 620px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 -10px 50px rgba(0, 0, 0, .2);
+            transform: translateY(100%);
+            transition: transform .4s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .recipe-overlay.active .recipe-modal {
+            transform: translateY(0);
+        }
+
+        .recipe-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.4rem;
+        }
+
+        .recipe-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 14px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .recipe-img-placeholder {
+            width: 90px;
+            height: 90px;
+            border-radius: 14px;
+            background: var(--green-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .recipe-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            margin-bottom: .4rem;
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: .8rem;
+            flex-wrap: wrap;
+        }
+
+        .recipe-meta span {
+            font-size: .78rem;
+            color: var(--gray);
+            background: var(--bg);
+            border-radius: 20px;
+            padding: .2rem .7rem;
+            font-weight: 600;
+        }
+
+        .recipe-section-head {
+            font-size: .8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--gray);
+            margin: 1.2rem 0 .6rem;
+        }
+
+        .recipe-ingredients {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+        }
+
+        .recipe-ing-tag {
+            background: var(--green-light);
+            color: var(--green);
+            border-radius: 20px;
+            padding: .25rem .75rem;
+            font-size: .8rem;
+            font-weight: 700;
+        }
+
+        .recipe-steps {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: .8rem;
+        }
+
+        .recipe-steps li {
+            display: flex;
+            gap: .8rem;
+            font-size: .88rem;
+            line-height: 1.6;
+        }
+
+        .recipe-step-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--green);
+            color: #fff;
+            font-size: .75rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .recipe-loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: .95rem;
+        }
+
+        .recipe-error {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--red);
+            font-size: .9rem;
+        }
+
+        .recipe-close {
+            float: right;
+            background: var(--bg);
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            color: var(--gray);
+        }
+
+        .recipe-btn {
+            background: var(--green-light);
+            color: var(--green);
+            border: none;
+            border-radius: 8px;
+            padding: .22rem .6rem;
+            font-size: .78rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            margin-left: .3rem;
+            transition: background .2s;
+        }
+
+        .recipe-btn:hover {
+            background: var(--green);
+            color: #fff;
+        }
+
+
         .pref-overlay {
             position: fixed;
             inset: 0;
@@ -1078,6 +1261,16 @@
 </head>
 
 <body>
+
+    <!-- ===== RECIPE MODAL ===== -->
+    <div class="recipe-overlay" id="recipeOverlay" onclick="if(event.target===this)closeRecipe()">
+        <div class="recipe-modal" id="recipeModal">
+            <button class="recipe-close" onclick="closeRecipe()">✕</button>
+            <div id="recipeContent">
+                <div class="recipe-loading">⏳ Loading recipe...</div>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== PREFERENCES MODAL ===== -->
     <div class="pref-overlay" id="prefOverlay">
@@ -1361,38 +1554,189 @@
     </footer>
 
     <script>
-        // ===== FOOD DATABASE (diet: 'veg' | 'egg' | 'nonveg') =====
+        // ===== FOOD DATABASE (56 items) =====
         const foods = [
-            // Vegetarian
-            { name: "Roti (2 pcs)", cat: "Staple", diet: "veg", price: 10, cal: 150, pro: 4, fat: 1, carb: 30 },
-            { name: "Dal (1 bowl)", cat: "Protein", diet: "veg", price: 20, cal: 120, pro: 8, fat: 2, carb: 18 },
-            { name: "Rice (1 plate)", cat: "Staple", diet: "veg", price: 15, cal: 200, pro: 4, fat: 1, carb: 45 },
-            { name: "Sabzi (Mixed Veg)", cat: "Veggie", diet: "veg", price: 25, cal: 90, pro: 3, fat: 4, carb: 12 },
-            { name: "Curd (1 bowl)", cat: "Dairy", diet: "veg", price: 15, cal: 70, pro: 5, fat: 3, carb: 6 },
-            { name: "Banana", cat: "Fruit", diet: "veg", price: 8, cal: 90, pro: 1, fat: 0, carb: 22 },
+            // --- Vegetarian: Staples ---
+            { name: "Roti (2 pcs)", cat: "Staple", diet: "veg", price: 0, cal: 150, pro: 4, fat: 1, carb: 30, free: true },
+            { name: "Dal (1 bowl)", cat: "Protein", diet: "veg", price: 0, cal: 120, pro: 8, fat: 2, carb: 18, free: true },
+            { name: "Rice (1 plate)", cat: "Staple", diet: "veg", price: 0, cal: 200, pro: 4, fat: 1, carb: 45, free: true },
+            { name: "Aloo Paratha", cat: "Breakfast", diet: "veg", price: 25, cal: 280, pro: 6, fat: 9, carb: 42 },
+            { name: "Methi Paratha", cat: "Breakfast", diet: "veg", price: 22, cal: 240, pro: 5, fat: 7, carb: 38 },
+            { name: "Puri Bhaji", cat: "Breakfast", diet: "veg", price: 30, cal: 310, pro: 6, fat: 14, carb: 42 },
+            // --- Vegetarian: Protein ---
+            { name: "Chana Masala", cat: "Protein", diet: "veg", price: 30, cal: 210, pro: 11, fat: 7, carb: 28 },
+            { name: "Paneer Sabzi", cat: "Protein", diet: "veg", price: 45, cal: 250, pro: 14, fat: 15, carb: 10 },
+            { name: "Palak Paneer", cat: "Protein", diet: "veg", price: 50, cal: 270, pro: 15, fat: 16, carb: 12 },
+            { name: "Matar Paneer", cat: "Protein", diet: "veg", price: 48, cal: 260, pro: 14, fat: 15, carb: 14 },
+            { name: "Dal Makhani", cat: "Protein", diet: "veg", price: 40, cal: 220, pro: 11, fat: 9, carb: 25 },
+            { name: "Soya Chunks (1 bowl)", cat: "Protein", diet: "veg", price: 15, cal: 170, pro: 18, fat: 3, carb: 12 },
+            { name: "Rajma (1 bowl)", cat: "Protein", diet: "veg", price: 25, cal: 180, pro: 10, fat: 3, carb: 30 },
+            { name: "Kadhi (1 bowl)", cat: "Protein", diet: "veg", price: 20, cal: 140, pro: 4, fat: 6, carb: 18 },
+            { name: "Dum Aloo", cat: "Veggie", diet: "veg", price: 35, cal: 200, pro: 4, fat: 10, carb: 26 },
+            // --- Vegetarian: Breakfast ---
             { name: "Poha (1 plate)", cat: "Breakfast", diet: "veg", price: 20, cal: 180, pro: 4, fat: 5, carb: 32 },
             { name: "Upma", cat: "Breakfast", diet: "veg", price: 18, cal: 150, pro: 4, fat: 6, carb: 25 },
             { name: "Bread + Butter", cat: "Breakfast", diet: "veg", price: 15, cal: 200, pro: 4, fat: 8, carb: 28 },
-            { name: "Chana Masala", cat: "Protein", diet: "veg", price: 30, cal: 210, pro: 11, fat: 7, carb: 28 },
-            { name: "Paneer Sabzi", cat: "Protein", diet: "veg", price: 45, cal: 250, pro: 14, fat: 15, carb: 10 },
+            { name: "Idli (2 pcs)", cat: "Breakfast", diet: "veg", price: 15, cal: 130, pro: 4, fat: 1, carb: 26 },
+            { name: "Plain Dosa", cat: "Breakfast", diet: "veg", price: 25, cal: 160, pro: 4, fat: 5, carb: 28 },
+            { name: "Medu Vada (2 pcs)", cat: "Breakfast", diet: "veg", price: 20, cal: 190, pro: 5, fat: 10, carb: 22 },
+            // --- Vegetarian: Veggies ---
+            { name: "Sabzi (Mixed Veg)", cat: "Veggie", diet: "veg", price: 0, cal: 90, pro: 3, fat: 4, carb: 12, free: true },
             { name: "Sambar (1 bowl)", cat: "Veggie", diet: "veg", price: 15, cal: 80, pro: 4, fat: 2, carb: 14 },
             { name: "Salad (Mixed)", cat: "Veggie", diet: "veg", price: 20, cal: 45, pro: 2, fat: 0, carb: 9 },
+            { name: "Vegetable Biryani", cat: "Staple", diet: "veg", price: 60, cal: 350, pro: 8, fat: 10, carb: 58 },
+            { name: "Pav Bhaji", cat: "Street", diet: "veg", price: 35, cal: 320, pro: 7, fat: 12, carb: 48 },
+            { name: "Vada Pav", cat: "Street", diet: "veg", price: 15, cal: 250, pro: 5, fat: 10, carb: 38 },
+            { name: "Misal Pav", cat: "Street", diet: "veg", price: 30, cal: 290, pro: 10, fat: 8, carb: 44 },
+            { name: "Bhel Puri", cat: "Snack", diet: "veg", price: 20, cal: 180, pro: 4, fat: 5, carb: 30 },
+            // --- Vegetarian: Dairy ---
+            { name: "Curd (1 bowl)", cat: "Dairy", diet: "veg", price: 15, cal: 70, pro: 5, fat: 3, carb: 6 },
             { name: "Lassi (1 glass)", cat: "Drink", diet: "veg", price: 20, cal: 120, pro: 5, fat: 4, carb: 18 },
-            { name: "Chai (1 cup)", cat: "Drink", diet: "veg", price: 10, cal: 45, pro: 1, fat: 1, carb: 8 },
+            { name: "Paneer (50g raw)", cat: "Dairy", diet: "veg", price: 20, cal: 135, pro: 9, fat: 10, carb: 2 },
+            // --- Vegetarian: Drinks & Fruits ---
+            { name: "Coconut Water", cat: "Drink", diet: "veg", price: 20, cal: 45, pro: 0, fat: 0, carb: 11 },
+            { name: "Banana", cat: "Fruit", diet: "veg", price: 8, cal: 90, pro: 1, fat: 0, carb: 22 },
             { name: "Apple", cat: "Fruit", diet: "veg", price: 25, cal: 80, pro: 0, fat: 0, carb: 20 },
-            { name: "Soya Chunks (1 bowl)", cat: "Protein", diet: "veg", price: 15, cal: 170, pro: 18, fat: 3, carb: 12 },
-            { name: "Rajma (1 bowl)", cat: "Protein", diet: "veg", price: 25, cal: 180, pro: 10, fat: 3, carb: 30 },
-            // Eggetarian
+            { name: "Orange", cat: "Fruit", diet: "veg", price: 15, cal: 60, pro: 1, fat: 0, carb: 15 },
+            { name: "Watermelon (2 slices)", cat: "Fruit", diet: "veg", price: 10, cal: 45, pro: 1, fat: 0, carb: 11 },
+            { name: "Fruit Salad", cat: "Snack", diet: "veg", price: 30, cal: 130, pro: 2, fat: 0, carb: 32 },
+            // --- Vegetarian: Snacks ---
+            { name: "Peanuts (roasted 50g)", cat: "Snack", diet: "veg", price: 10, cal: 290, pro: 13, fat: 24, carb: 10 },
+            { name: "Sprouts (1 bowl)", cat: "Snack", diet: "veg", price: 10, cal: 100, pro: 8, fat: 1, carb: 16 },
+            // --- Eggetarian ---
             { name: "Boiled Egg (2 pcs)", cat: "Protein", diet: "egg", price: 16, cal: 140, pro: 12, fat: 10, carb: 1 },
             { name: "Egg Bhurji", cat: "Protein", diet: "egg", price: 30, cal: 160, pro: 12, fat: 10, carb: 5 },
             { name: "Omelette", cat: "Breakfast", diet: "egg", price: 20, cal: 130, pro: 10, fat: 9, carb: 2 },
             { name: "Egg Sandwich", cat: "Breakfast", diet: "egg", price: 30, cal: 250, pro: 14, fat: 10, carb: 28 },
-            // Non-veg
+            { name: "Egg Curry", cat: "Protein", diet: "egg", price: 40, cal: 200, pro: 14, fat: 13, carb: 7 },
+            { name: "Egg Fried Rice", cat: "Staple", diet: "egg", price: 45, cal: 320, pro: 14, fat: 10, carb: 46 },
+            // --- Non-Veg ---
             { name: "Chicken Curry (150g)", cat: "Protein", diet: "nonveg", price: 70, cal: 270, pro: 28, fat: 14, carb: 6 },
             { name: "Fish Curry (150g)", cat: "Protein", diet: "nonveg", price: 60, cal: 220, pro: 25, fat: 10, carb: 5 },
+            { name: "Fish Fry (2 pcs)", cat: "Protein", diet: "nonveg", price: 55, cal: 200, pro: 22, fat: 12, carb: 4 },
             { name: "Chicken Rice (1 plate)", cat: "Staple", diet: "nonveg", price: 80, cal: 380, pro: 28, fat: 10, carb: 42 },
             { name: "Mutton Curry (100g)", cat: "Protein", diet: "nonveg", price: 90, cal: 300, pro: 26, fat: 18, carb: 4 },
+            { name: "Mutton Biryani", cat: "Staple", diet: "nonveg", price: 120, cal: 450, pro: 30, fat: 18, carb: 48 },
+            { name: "Keema Rice", cat: "Staple", diet: "nonveg", price: 80, cal: 370, pro: 25, fat: 16, carb: 40 },
+            { name: "Prawn Curry (100g)", cat: "Protein", diet: "nonveg", price: 100, cal: 230, pro: 24, fat: 11, carb: 6 },
+            { name: "Chicken Biryani", cat: "Staple", diet: "nonveg", price: 110, cal: 420, pro: 30, fat: 15, carb: 50 },
+            { name: "Butter Chicken", cat: "Protein", diet: "nonveg", price: 100, cal: 310, pro: 28, fat: 17, carb: 10 },
         ];
+
+
+
+
+
+
+
+
+        // ===== LOCAL RECIPES DATABASE =====
+        const RECIPES = {
+            "Roti": { time: "15 min", serves: 2, ing: ["2 cups whole wheat flour", "Water as needed", "Salt to taste", "1 tsp oil"], steps: ["Mix flour and salt. Add water gradually and knead into soft dough.", "Rest dough for 10 minutes covered.", "Divide into small balls and roll each into thin circles.", "Cook on hot tawa 1-2 min each side until golden spots appear.", "Apply ghee or butter and serve hot."] },
+            "Dal": { time: "25 min", serves: 2, ing: ["1 cup toor dal / moong dal", "1 tomato chopped", "1 onion chopped", "1 tsp turmeric", "1 tsp cumin", "Salt, oil, green chilli"], steps: ["Pressure cook dal with turmeric and water for 3-4 whistles.", "Heat oil in pan, add cumin seeds. Let them splutter.", "Add onion, cook till golden. Add tomato and cook 2 min.", "Pour in cooked dal, add salt and simmer 5 min.", "Garnish with coriander and serve with roti or rice."] },
+            "Rice": { time: "20 min", serves: 2, ing: ["1 cup basmati rice", "2 cups water", "Salt", "1 tsp ghee (optional)"], steps: ["Wash rice 2-3 times until water runs clear.", "Add rice and water in pot. Bring to boil.", "Reduce flame, cover and cook 12-15 min.", "Fluff with fork, add ghee and serve."] },
+            "Aloo Paratha": { time: "30 min", serves: 2, ing: ["2 cups wheat flour", "3 boiled potatoes", "Green chilli", "1 tsp cumin powder", "Ajwain", "Salt", "Oil/ghee"], steps: ["Knead soft dough from flour with water and salt.", "Mash potatoes with chilli, cumin, salt for filling.", "Take dough ball, flatten, stuff filling in center, seal and roll carefully.", "Cook on tawa with ghee/oil both sides until golden.", "Serve hot with curd, pickle or butter."] },
+            "Methi Paratha": { time: "25 min", serves: 2, ing: ["2 cups wheat flour", "1 cup fresh methi leaves", "1 tsp cumin", "Red chilli powder", "Salt", "Oil"], steps: ["Mix flour with cleaned methi leaves, cumin, chilli, salt and water.", "Knead into soft dough.", "Roll into parathas of medium thickness.", "Cook on tawa with oil until brown spots appear on both sides.", "Serve with curd."] },
+            "Puri Bhaji": { time: "30 min", serves: 2, ing: ["2 cups wheat flour", "3 potatoes boiled", "Onion", "Tomato", "Mustard seeds", "Turmeric", "Oil"], steps: ["Knead stiff dough. Rest for 10 min.", "For bhaji: heat oil, add mustard seeds, chopped onion and tomato.", "Add mashed potato, turmeric, salt and mix well.", "Roll dough into small circles, deep fry in hot oil until puffed.", "Serve hot puris with bhaji."] },
+            "Chana Masala": { time: "35 min", serves: 3, ing: ["2 cups chickpeas (soaked overnight)", "2 onions", "2 tomatoes", "Ginger garlic paste", "Chana masala powder", "Cumin", "Coriander", "Oil"], steps: ["Pressure cook chickpeas with water and salt for 5-6 whistles.", "Heat oil, add cumin. Add onion and cook till golden.", "Add ginger garlic paste, tomatoes and cook till oil separates.", "Add chana masala powder, cooked chickpeas and 1 cup water.", "Simmer 10 min. Garnish with coriander and serve."] },
+            "Paneer Sabzi": { time: "25 min", serves: 2, ing: ["200g paneer cubed", "1 onion", "2 tomatoes", "Ginger garlic paste", "Red chilli powder", "Garam masala", "Oil"], steps: ["Lightly fry paneer cubes till golden and keep aside.", "Heat oil, fry onion till golden. Add ginger garlic paste.", "Add tomatoes and cook till oil separates.", "Add all spices, stir well. Add paneer and mix.", "Add water, simmer 5 min. Serve hot."] },
+            "Palak Paneer": { time: "30 min", serves: 2, ing: ["2 bunches palak (spinach)", "200g paneer", "1 onion", "Garlic", "Cream", "Spices"], steps: ["Blanch spinach in boiling water 2 min. Blend into smooth puree.", "Heat oil, fry onion and garlic. Add spices.", "Add spinach puree and simmer 5 min.", "Add fried paneer cubes and cream. Mix gently.", "Serve with roti or naan."] },
+            "Matar Paneer": { time: "25 min", serves: 2, ing: ["200g paneer", "1 cup green peas", "2 tomatoes", "1 onion", "Ginger", "Spices", "Oil"], steps: ["Heat oil, sauté onion till golden.", "Add ginger, tomatoes and cook till soft.", "Add spices, cook 2 min.", "Add peas, simmer 5 min. Add paneer.", "Cook 5 more minutes. Serve hot."] },
+            "Dal Makhani": { time: "45 min", serves: 3, ing: ["1 cup whole black urad dal", "Rajma 2 tbsp", "Butter", "Cream", "Tomato puree", "Ginger garlic paste", "Spices"], steps: ["Soak and pressure cook urad dal and rajma for 8 whistles.", "Heat butter, add ginger garlic paste, fry 2 min.", "Add tomato puree and spices. Cook till oil separates.", "Add mashed dal. Simmer on low flame 20 min stirring often.", "Add cream, garnish with butter and serve."] },
+            "Soya Chunks": { time: "20 min", serves: 2, ing: ["1 cup soya chunks", "1 onion", "1 tomato", "Spices", "Oil"], steps: ["Boil soya chunks in water 10 min, squeeze and drain.", "Heat oil, add onion and fry till golden.", "Add tomato and spices, cook 3 min.", "Add soya chunks, mix and cook 5 min.", "Serve with roti."] },
+            "Rajma": { time: "40 min", serves: 3, ing: ["1 cup rajma (kidney beans soaked)", "2 onions", "2 tomatoes", "Ginger garlic paste", "Rajma masala", "Oil"], steps: ["Pressure cook rajma with salt for 5-6 whistles.", "Heat oil, fry onions till deep brown.", "Add ginger garlic paste, tomatoes, rajma masala. Cook well.", "Add cooked rajma with its water. Simmer 15 min.", "Garnish with coriander, serve with rice."] },
+            "Kadhi": { time: "30 min", serves: 2, ing: ["1 cup curd", "2 tbsp besan", "Turmeric", "Mustard seeds", "Red chilli", "Curry leaves", "Salt"], steps: ["Mix curd, besan, turmeric and 2 cups water until smooth.", "Bring to boil on low flame, stir constantly.", "In another pan, heat oil and splutter mustard seeds.", "Add dried red chilli, curry leaves. Pour over kadhi.", "Simmer 10 min. Serve with rice."] },
+            "Dum Aloo": { time: "30 min", serves: 2, ing: ["8 baby potatoes", "Curd", "Tomato puree", "Kashmiri red chilli", "Fennel powder", "Oil", "Garam masala"], steps: ["Prick and fry baby potatoes till golden.", "Mix curd with all spices.", "Heat oil, add curd mixture and cook 5 min.", "Add fried potatoes, cover and cook on low flame 15 min.", "Garnish and serve with roti."] },
+            "Poha": { time: "15 min", serves: 2, ing: ["2 cups poha (flattened rice)", "1 onion", "Mustard seeds", "Curry leaves", "Green chilli", "Turmeric", "Lemon juice", "Peanuts"], steps: ["Wash poha gently and let it drain for 5 min.", "Heat oil, add mustard seeds and peanuts. Splutter.", "Add curry leaves, green chilli, onion. Fry 2 min.", "Add poha, turmeric, salt. Mix gently.", "Squeeze lemon and serve garnished with coriander."] },
+            "Upma": { time: "20 min", serves: 2, ing: ["1 cup semolina (rava)", "2 cups water", "Mustard seeds", "Onion", "Green chilli", "Ginger", "Vegetables (optional)", "Curry leaves"], steps: ["Dry roast rava in pan till light pink. Keep aside.", "Heat oil, add mustard seeds, then onion, chilli and ginger.", "Add vegetables if using. Cook 2 min.", "Add water, boil. Slowly add rava stirring constantly.", "Cover and cook on low 5 min. Serve hot with chutney."] },
+            "Bread + Butter": { time: "5 min", serves: 1, ing: ["4 slices bread", "Butter", "Salt (optional)"], steps: ["Toast bread slices if desired.", "Apply generous butter on each slice.", "Serve with chai or milk."] },
+            "Idli": { time: "20 min", serves: 2, ing: ["Idli batter (rice + urad dal)", "Salt", "Oil for greasing"], steps: ["Grease idli moulds with oil.", "Pour batter into moulds up to 3/4 full.", "Steam for 10-12 min in idli cooker.", "Insert toothpick to check if done.", "Serve hot with sambar and coconut chutney."] },
+            "Plain Dosa": { time: "20 min", serves: 2, ing: ["Dosa batter", "Oil", "Salt"], steps: ["Heat tawa and pour a ladle of batter in center.", "Spread in circular motion to thin crepe.", "Drizzle oil on edges, cook till golden.", "Fold and serve with sambar and coconut chutney."] },
+            "Medu Vada": { time: "25 min", serves: 2, ing: ["1 cup urad dal soaked", "Green chilli", "Ginger", "Curry leaves", "Salt", "Oil for frying"], steps: ["Grind soaked dal to smooth fluffy batter.", "Add chilli, ginger, curry leaves, salt. Mix well.", "Wet hands, shape into rings.", "Deep fry on medium heat till golden.", "Serve with sambar and coconut chutney."] },
+            "Sabzi": { time: "20 min", serves: 2, ing: ["2 cups mixed vegetables (carrot, beans, peas, potato)", "Onion", "Tomato", "Turmeric", "Cumin", "Coriander powder", "Oil"], steps: ["Heat oil, add cumin seeds. Add onion and cook till translucent.", "Add tomato and spices. Cook 2 min.", "Add chopped vegetables and mix well.", "Cover and cook on medium flame 15 min.", "Garnish with coriander and serve."] },
+            "Sambar": { time: "30 min", serves: 3, ing: ["1 cup toor dal", "Drumstick/vegetables", "Tamarind pulp", "Sambar powder", "Mustard seeds", "Curry leaves", "Dry red chilli"], steps: ["Pressure cook dal till mushy.", "Cook vegetables in tamarind water till soft.", "Add cooked dal and sambar powder. Boil 5 min.", "Temper with mustard seeds, curry leaves, dry red chilli.", "Serve hot with idli or rice."] },
+            "Salad": { time: "10 min", serves: 2, ing: ["Cucumber", "Tomato", "Onion", "Carrot", "Lemon juice", "Salt", "Chaat masala", "Coriander"], steps: ["Chop all vegetables into bite-sized pieces.", "Mix in a bowl.", "Add salt, lemon juice and chaat masala.", "Garnish with coriander.", "Serve fresh."] },
+            "Vegetable Biryani": { time: "45 min", serves: 3, ing: ["2 cups basmati rice", "Mixed vegetables", "Whole spices", "Curd", "Fried onions", "Saffron milk", "Ghee"], steps: ["Soak and cook rice 70% done.", "Cook veggies with curd and spices.", "Layer rice, veggies, fried onions, saffron milk.", "Cook on dum (low flame) 20 min.", "Serve with raita."] },
+            "Pav Bhaji": { time: "30 min", serves: 3, ing: ["5 potatoes boiled", "1 cup mixed veg", "Pav bhaji masala", "Butter", "Pav buns", "Onion", "Tomato"], steps: ["Mash boiled vegetables.", "Heat butter, add onion and tomato. Cook 5 min.", "Add mashed veg, pav bhaji masala, salt.", "Cook on high flame 10 min, adding water as needed.", "Toast pav with butter. Serve with bhaji, onion and lemon."] },
+            "Vada Pav": { time: "30 min", serves: 4, ing: ["4 potatoes boiled", "Green chilli", "Ginger", "Coriander", "Besan batter", "Pav buns", "Dry chutney"], steps: ["Mash potatoes with chilli, ginger, salt, coriander.", "Shape into balls.", "Dip in besan batter and deep fry till golden.", "Apply chutneys on pav, place vada inside.", "Serve hot."] },
+            "Misal Pav": { time: "35 min", serves: 3, ing: ["2 cups sprouted moth beans", "Onion", "Tomato", "Misal masala", "Pav", "Farsan topping", "Lemon"], steps: ["Cook moth sprouts till tender.", "Heat oil, fry onion, tomato, masala. Add sprouts.", "Cook 10 min. Adjust salt and spice.", "Serve in bowl, top with farsan, onion, lemon.", "Serve with pav."] },
+            "Bhel Puri": { time: "10 min", serves: 2, ing: ["2 cups puffed rice", "Sev", "Onion", "Tomato", "Green chutney", "Tamarind chutney", "Chaat masala", "Coriander"], steps: ["Mix puffed rice with chopped onion and tomato.", "Add green chutney and tamarind chutney.", "Add chaat masala, salt and sev.", "Toss quickly and add coriander.", "Serve immediately before it gets soggy."] },
+            "Curd": { time: "8 hr", serves: 2, ing: ["1 litre full fat milk", "2 tbsp existing curd (starter)"], steps: ["Boil milk and cool to lukewarm (40°C).", "Add curd starter and mix well.", "Pour into container and cover.", "Keep in warm place for 6-8 hours.", "Refrigerate and serve chilled."] },
+            "Lassi": { time: "5 min", serves: 2, ing: ["1 cup thick curd", "1/2 cup milk", "Sugar to taste", "Cardamom", "Ice cubes"], steps: ["Blend curd, milk, sugar and cardamom.", "Blend until frothy and smooth.", "Add ice cubes and blend again.", "Pour in glasses.", "Serve chilled garnished with cream."] },
+            "Paneer (raw)": { time: "30 min", serves: 4, ing: ["2 litres full fat milk", "3 tbsp lemon juice / vinegar"], steps: ["Boil milk. Turn off flame.", "Add lemon juice slowly, stirring gently. Milk will curdle.", "Strain through muslin cloth.", "Rinse with cold water. Squeeze excess water.", "Press for 30 min with weight. Cut into blocks."] },
+            "Chai": { time: "8 min", serves: 2, ing: ["1.5 cups water", "0.5 cup milk", "2 tsp tea leaves", "Sugar", "Ginger", "Cardamom"], steps: ["Boil water with crushed ginger and cardamom.", "Add tea leaves and boil 1 min.", "Add milk and boil till desired colour.", "Add sugar. Strain and serve hot."] },
+            "Coconut Water": { time: "2 min", serves: 1, ing: ["1 fresh coconut", "Straw"], steps: ["Pierce the soft eyes of coconut with a sharp object.", "Insert a straw and enjoy fresh coconut water.", "Alternatively cut top for direct drinking."] },
+            "Banana": { time: "1 min", serves: 1, ing: ["1-2 ripe bananas"], steps: ["Peel banana and eat directly.", "Or slice and add to curd or cereal for a healthier meal."] },
+            "Fruit Salad": { time: "10 min", serves: 2, ing: ["Apple", "Banana", "Orange", "Grapes", "Pomegranate seeds", "Sugar/honey", "Lemon juice"], steps: ["Chop all fruits into bite-sized pieces.", "Mix in a bowl.", "Add honey and lemon juice.", "Toss gently and refrigerate 15 min.", "Serve chilled."] },
+            "Peanuts": { time: "10 min", serves: 2, ing: ["1 cup raw peanuts", "Salt", "Oil"], steps: ["Dry roast peanuts on low flame 8-10 min, stirring often.", "Or toss with salt and oil and bake at 180°C for 15 min.", "Cool and store in airtight box."] },
+            "Sprouts": { time: "5 min", serves: 2, ing: ["1 cup sprouted moong/moth", "Salt", "Lemon juice", "Chaat masala", "Onion", "Tomato"], steps: ["Steam sprouts 2 min or use raw.", "Mix with chopped onion and tomato.", "Add lemon juice, salt and chaat masala.", "Toss and serve fresh."] },
+            // --- Eggetarian ---
+            "Boiled Egg": { time: "12 min", serves: 1, ing: ["2 eggs", "Water", "Salt"], steps: ["Bring water to boil in a pot.", "Gently lower eggs and boil 10-12 min for hard boiled.", "Transfer to cold water immediately.", "Peel and serve with salt and pepper."] },
+            "Egg Bhurji": { time: "15 min", serves: 2, ing: ["3 eggs", "1 onion", "1 tomato", "Green chilli", "Turmeric", "Salt", "Oil", "Coriander"], steps: ["Beat eggs with salt and turmeric.", "Heat oil, add green chilli, onion. Fry till translucent.", "Add tomato and cook 2 min.", "Pour beaten eggs, stir continuously on medium flame.", "Garnish with coriander. Serve with roti."] },
+            "Omelette": { time: "10 min", serves: 1, ing: ["2 eggs", "Onion", "Green chilli", "Salt", "Pepper", "Oil/butter"], steps: ["Beat eggs with salt, pepper, chopped onion and chilli.", "Heat butter in pan.", "Pour egg mixture, spread evenly.", "Cook 2 min, then fold in half.", "Serve hot with bread or roti."] },
+            "Egg Sandwich": { time: "15 min", serves: 1, ing: ["2 bread slices", "1 boiled egg", "Mayonnaise", "Mustard sauce", "Onion", "Tomato", "Salt"], steps: ["Slice boiled egg thinly.", "Apply mayonnaise on bread slices.", "Layer with egg slices, onion rings and tomato.", "Add salt and mustard.", "Press sandwiches and serve."] },
+            "Egg Curry": { time: "30 min", serves: 2, ing: ["4 eggs boiled", "2 onions", "2 tomatoes", "Ginger garlic paste", "Red chilli", "Coriander powder", "Garam masala", "Oil"], steps: ["Fry peeled boiled eggs till lightly golden. Keep aside.", "Heat oil, fry onion till brown.", "Add ginger garlic paste, tomatoes and spices. Cook till oil separates.", "Add 1 cup water and bring to boil.", "Add eggs, simmer 8 min and serve hot."] },
+            "Egg Fried Rice": { time: "20 min", serves: 2, ing: ["2 cups cooked rice (cooled)", "2 eggs", "Soy sauce", "Garlic", "Spring onion", "Carrot", "Oil", "Salt"], steps: ["Heat oil in wok on high flame.", "Scramble eggs quickly and push to side.", "Add garlic and vegetables. Stir fry 2 min.", "Add rice, soy sauce, salt and mix everything.", "Garnish with spring onion and serve hot."] },
+            // --- Non-veg ---
+            "Chicken Curry": { time: "40 min", serves: 3, ing: ["500g chicken", "2 onions", "Tomatoes", "Ginger garlic paste", "Curd", "Red chilli", "Coriander", "Garam masala", "Oil"], steps: ["Marinate chicken in curd and spices 30 min.", "Heat oil, fry onion till golden.", "Add ginger garlic paste and tomatoes. Cook till oil separates.", "Add marinated chicken and cook on high 10 min.", "Add water, simmer 20 min until cooked through."] },
+            "Fish Curry": { time: "30 min", serves: 2, ing: ["300g fish (rohu/pomfret)", "Coconut milk", "Tomato", "Onion", "Green chilli", "Turmeric", "Red chilli", "Tamarind", "Mustard & curry leaves"], steps: ["Marinate fish with turmeric and salt.", "Heat oil, splutter mustard seeds and curry leaves.", "Add onion, tomato, green chilli. Cook 5 min.", "Add coconut milk, tamarind and spices.", "Add fish gently and cook 10 min on low flame."] },
+            "Fish Fry": { time: "25 min", serves: 2, ing: ["4 fish pieces", "Turmeric", "Red chilli powder", "Lemon juice", "Ginger garlic paste", "Salt", "Rice flour", "Oil for frying"], steps: ["Make deep cuts in fish for marinade to enter.", "Mix all spices and coat fish well.", "Marinate for 30 min.", "Roll in rice flour for crispiness.", "Shallow fry on medium flame 4-5 min each side till golden."] },
+            "Chicken Rice": { time: "30 min", serves: 2, ing: ["2 cups cooked rice", "Chicken 200g", "Soy sauce", "Garlic", "Vegetables", "Oil"], steps: ["Cook chicken strips in oil until done. Keep aside.", "Stir fry vegetables and garlic.", "Add rice and soy sauce. Toss on high flame.", "Add chicken and mix well.", "Serve hot."] },
+            "Mutton Curry": { time: "60 min", serves: 3, ing: ["500g mutton", "2 onions", "Tomatoes", "Curd", "Ginger garlic paste", "Whole spices", "Red chilli", "Coriander", "Oil"], steps: ["Pressure cook mutton with whole spices for 6 whistles.", "Heat oil, fry onion till dark brown.", "Add ginger garlic paste, tomatoes, Curd. Cook till oil separates.", "Add all spices, curd and cooked mutton with stock.", "Simmer 20 min till gravy thickens."] },
+            "Mutton Biryani": { time: "90 min", serves: 4, ing: ["500g mutton", "2 cups basmati rice", "Whole spices", "Curd", "Fried onions", "Saffron", "Mint", "Ghee"], steps: ["Marinate mutton in curd and spices for 1 hour.", "Half cook rice with whole spices.", "Cook marinated mutton till 80% done.", "Layer mutton, rice, fried onions, mint, saffron milk in pot.", "Cook on dum (low flame with sealed lid) 30 min."] },
+            "Keema Rice": { time: "35 min", serves: 2, ing: ["250g minced mutton (keema)", "2 cups cooked rice", "Onion", "Tomato", "Ginger garlic paste", "Spices", "Oil"], steps: ["Heat oil, fry onion till golden.", "Add ginger garlic paste, tomato and spices.", "Add keema and cook on high flame 15 min till dry.", "Add cooked rice and mix on high flame.", "Serve hot with raita."] },
+            "Prawn Curry": { time: "30 min", serves: 2, ing: ["200g prawns cleaned", "Coconut milk", "Onion", "Tomato", "Green chilli", "Turmeric", "Ginger garlic", "Mustard seeds"], steps: ["Heat oil, splutter mustard seeds.", "Add onion, green chilli and ginger garlic. Cook till golden.", "Add tomato and turmeric. Cook 3 min.", "Add coconut milk and bring to simmer.", "Add prawns and cook 8 min. Do not overcook. Serve with rice."] },
+            "Chicken Biryani": { time: "75 min", serves: 4, ing: ["500g chicken", "2 cups basmati rice", "Whole spices", "Curd", "Fried onions", "Saffron milk", "Mint leaves", "Ghee"], steps: ["Marinate chicken in curd, spices and fried onions for 45 min.", "Partially cook rice (70%) with whole spices.", "Layer chicken and rice alternately in a heavy pot.", "Top with fried onions, mint, saffron milk and ghee.", "Cook on dum (sealed low flame) for 25 min."] },
+            "Butter Chicken": { time: "45 min", serves: 3, ing: ["500g chicken", "Butter", "Cream", "Tomato puree", "Cashew paste", "Ginger garlic paste", "Kashmiri red chilli", "Honey", "Spices"], steps: ["Marinate and grill chicken.", "Heat butter, add ginger garlic paste and cook 2 min.", "Add tomato puree, cashew paste, red chilli and spices.", "Simmer 10 min, add water to adjust consistency.", "Add grilled chicken and cream. Simmer 10 min and serve."] },
+        };
+
+        function findRecipe(foodName) {
+            // Try exact, then partial match
+            const keys = Object.keys(RECIPES);
+            const clean = foodName.replace(/\(.*?\)/g, '').replace(/\d+g|\d+\s*(pcs|bowl|plate|glass|cup)/gi, '').trim();
+            return RECIPES[clean] ||
+                RECIPES[foodName] ||
+                keys.map(k => ({ k, score: clean.split(' ').filter(w => k.toLowerCase().includes(w.toLowerCase())).length }))
+                    .filter(x => x.score > 0)
+                    .sort((a, b) => b.score - a.score)
+                    .map(x => RECIPES[x.k])[0] ||
+                null;
+        }
+
+        // ===== RECIPE MODAL =====
+        function showRecipe(foodName) {
+            document.getElementById('recipeOverlay').classList.add('active');
+            const recipe = findRecipe(foodName);
+            if (!recipe) {
+                document.getElementById('recipeContent').innerHTML =
+                    `<div class="recipe-error">😕 No recipe found for "${foodName}".</div>`;
+                return;
+            }
+            const ingredients = recipe.ing.map(i => `<span class="recipe-ing-tag">${i}</span>`).join('');
+            const steps = recipe.steps.map((s, i) =>
+                `<li><div class="recipe-step-num">${i + 1}</div><div>${s}</div></li>`).join('');
+            document.getElementById('recipeContent').innerHTML = `
+                <div class="recipe-header">
+                    <div class="recipe-img-placeholder">🍽</div>
+                    <div>
+                        <div class="recipe-title">${foodName}</div>
+                        <div class="recipe-meta">
+                            <span>⏱ ${recipe.time}</span>
+                            <span>🍽 ${recipe.serves} servings</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="recipe-section-head">🧂 Ingredients</div>
+                <div class="recipe-ingredients">${ingredients}</div>
+                <div class="recipe-section-head">👨‍🍳 Steps</div>
+                <ol class="recipe-steps">${steps}</ol>`;
+        }
+        function closeRecipe() {
+            document.getElementById('recipeOverlay').classList.remove('active');
+        }
+
+
+
 
         let plate = [];
         let visibleFoods = [...foods];
@@ -1419,14 +1763,17 @@
                 const div = document.createElement('div');
                 div.className = 'food-item';
                 div.innerHTML = `
-      <div>
-        <div class="food-name">${food.name}</div>
-        <div class="food-meta">${food.cal} kcal · ${food.pro}g protein · <em>${food.cat}</em></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:.4rem;">
-        <span class="food-price">₹${food.price}</span>
-        <button class="add-btn" onclick="addFood(${idx})">+ Add</button>
-      </div>`;
+                  <div>
+                    <div class="food-name">${food.name}${food.free ? ' <span style="font-size:.7rem;color:var(--green);font-weight:800;">🏠 FREE</span>' : ''}</div>
+                    <div class="food-meta">${food.cal} kcal · ${food.pro}g protein · <em>${food.cat}</em></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;justify-content:flex-end">
+                    ${food.free
+                        ? '<span style="background:#e8f5e9;color:var(--green);border-radius:8px;padding:.22rem .6rem;font-size:.78rem;font-weight:700;">Home Staple</span>'
+                        : `<span class="food-price">₹${food.price}</span>`}
+                    <button class="recipe-btn" onclick="showRecipe('${food.name.replace(/'/g, "&#39;")}')">🍳 Recipe</button>
+                    <button class="add-btn" onclick="addFood(${idx})">+ Add</button>
+                  </div>`;
                 el.appendChild(div);
             });
         }
@@ -1445,7 +1792,8 @@
 
         function updateTotals() {
             const budget = parseFloat(document.getElementById('budgetInput').value) || 0;
-            const totalCost = plate.reduce((s, f) => s + f.price, 0);
+            // Free staples (Roti, Dal, Rice, Sabzi) are excluded from cost
+            const totalCost = plate.filter(f => !f.free).reduce((s, f) => s + f.price, 0);
             const totalCal = plate.reduce((s, f) => s + f.cal, 0);
             const totalPro = plate.reduce((s, f) => s + f.pro, 0);
             const totalFat = plate.reduce((s, f) => s + f.fat, 0);
@@ -1610,7 +1958,9 @@
             }));
         }
 
+
         // ===== PREFERENCES MODAL LOGIC =====
+
         const userPrefs = { goal: '', diet: '', weight: 0, budget: 100 };
 
         function openPrefModal() {
