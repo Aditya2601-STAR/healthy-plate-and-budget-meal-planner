@@ -46,6 +46,25 @@ else:
             name = row.get('TranslatedRecipeName') or row.get('RecipeName')
             if not name: continue
             
+            # 1) Filter out desserts, sweets, and deep fried foods to keep only healthy DB
+            unhealthy_keywords = [
+                'fry', 'fried', 'samosa', 'pakora', 'bhatura', 'poori', 'puri', 
+                'sweet', 'dessert', 'halwa', 'laddu', 'ladoo', 'barfi', 'cake', 
+                'cookie', 'ice cream', 'jalebi', 'jamun', 'kachori', 'sugar', 
+                'bhavnagari', 'bhajiya', 'vada', 'bonda', 'chips', 'murukku',
+                'pudding', 'payasam', 'kheer', 'mysore pak', 'chikki', 'fudge'
+            ]
+            
+            course_lower = str(row.get('Course', '')).lower()
+            name_lower = str(name).lower()
+            
+            if any(kw in name_lower or kw in course_lower for kw in unhealthy_keywords):
+                continue
+            
+            # 2) Stop after 1000 healthy recipes to keep file size small (around < 2MB)
+            if len(recipes) >= 1000:
+                break
+                
             diet_raw = row.get('Diet', 'Vegetarian')
             diet = diet_map.get(diet_raw, "veg")
             
