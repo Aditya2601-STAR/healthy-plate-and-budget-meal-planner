@@ -578,7 +578,6 @@
                     name: user.displayName, email: user.email,
                     picture: user.photoURL, provider: 'google'
                 }));
-                // Try to find a message element to show success
                 const isLogin = document.getElementById('form-login').classList.contains('active');
                 const msgId = isLogin ? 'login-msg' : 'signup-msg';
                 showMsg(msgId, `✅ Welcome, ${user.displayName}!`, 'success');
@@ -588,7 +587,7 @@
             console.error("Redirect Auth Error:", error);
             // Alert help for mobile users where console isn't visible
             if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-                alert("Mobile Auth Error: " + error.message);
+                alert("Mobile Auth Error: " + error.message + "\nProtocol: " + window.location.protocol + "\nHost: " + window.location.hostname);
             }
             const isLogin = document.getElementById('form-login').classList.contains('active');
             const msgId = isLogin ? 'login-msg' : 'signup-msg';
@@ -599,6 +598,12 @@
             const isLogin = document.getElementById('form-login').classList.contains('active');
             const btn = document.getElementById(isLogin ? 'google-login-btn' : 'google-signup-btn');
             const msgId = isLogin ? 'login-msg' : 'signup-msg';
+
+            // Diagnostic: Google Auth fails on file://
+            if (window.location.protocol === 'file:') {
+                alert("❌ GOOGLE AUTH ERROR: This doesn't work on 'file://'. Please host the project on GitHub or use a Local Server.");
+                return;
+            }
 
             btn.classList.add('loading');
             btn.textContent = '⏳ Starting...';
