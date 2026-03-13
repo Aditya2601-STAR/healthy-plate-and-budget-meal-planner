@@ -552,11 +552,17 @@
 
         <!-- Diagnostic Log for Mobile Debugging -->
         <div id="debug-box"
-            style="display:none;margin-top:20px;padding:15px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;font-family:monospace;font-size:12px;color:#475569;max-height:150px;overflow-y:auto;">
-            <div style="font-weight:bold;margin-bottom:8px;color:#059669;display:flex;justify-content:space-between;">
+            style="display:none;margin-top:20px;padding:15px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;font-family:monospace;font-size:12px;color:#475569;max-height:200px;overflow-y:auto;">
+            <div
+                style="font-weight:bold;margin-bottom:8px;color:#059669;display:flex;justify-content:space-between;align-items:center;">
                 <span>System Diagnostics</span>
-                <button onclick="document.getElementById('log-content').innerHTML=''"
-                    style="border:none;background:none;color:#94a3b8;cursor:pointer;">Clear</button>
+                <div style="display:flex;gap:8px;">
+                    <button onclick="runConnectionTest()"
+                        style="padding:2px 8px;font-size:10px;background:#059669;color:white;border:none;border-radius:4px;cursor:pointer;">Run
+                        Test</button>
+                    <button onclick="document.getElementById('log-content').innerHTML=''"
+                        style="border:none;background:none;color:#94a3b8;cursor:pointer;font-size:10px;">Clear</button>
+                </div>
             </div>
             <div id="log-content"></div>
         </div>
@@ -633,6 +639,42 @@
 
         addLog(`Protocol: ${window.location.protocol} | Host: ${window.location.hostname}`);
 
+        window.runConnectionTest = async function () {
+            addLog("Test: Starting connection check...");
+
+            // Check Storage
+            try {
+                localStorage.setItem('hp_test', '1');
+                localStorage.removeItem('hp_test');
+                addLog("Test: LocalStorage - WORKING", "success");
+            } catch (e) {
+                addLog("Test: LocalStorage - BLOCKED", "error");
+            }
+
+            // Check Cookies
+            if (navigator.cookieEnabled) {
+                addLog("Test: Cookies - ENABLED", "success");
+            } else {
+                addLog("Test: Cookies - DISABLED", "error");
+            }
+
+            // Check Firebase User
+            const user = auth.currentUser;
+            if (user) {
+                addLog("Test: Active User detected: " + user.email, "success");
+            } else {
+                addLog("Test: No user found in current memory.");
+            }
+
+            // Check Redirect Result again
+            try {
+                const result = await auth.getRedirectResult();
+                addLog("Test: Redirect Result - " + (result && result.user ? "USER PRESENT" : "EMPTY"));
+            } catch (e) {
+                addLog("Test: Redirect Error - " + e.code, "error");
+            }
+        };
+
         window.signInWithGoogle = async function () {
             const isLogin = document.getElementById('form-login').classList.contains('active');
             const btn = document.getElementById(isLogin ? 'google-login-btn' : 'google-signup-btn');
@@ -647,42 +689,33 @@
             btn.classList.add('loading');
             btn.textContent = '⏳ Starting...';
 
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-
             try {
-                if (isMobile) {
-                    // Test if we are in a 'webview' (like WhatsApp/Instagram browser)
-                    if (userAgent.includes('FBAN') || userAgent.includes('FBAV') || userAgent.includes('Instagram') || userAgent.includes('WhatsApp')) {
-                        alert("Please open this site in a real browser (Chrome/Safari) for Google Sign-in to work.");
-                        btn.classList.remove('loading');
-                        btn.textContent = 'Continue with Google';
-                        return;
-                    }
-                    await auth.signInWithRedirect(provider);
-                } else {
-                    // Desktop is better with popup
-                    const result = await auth.signInWithPopup(provider);
-                    if (result.user) {
-                        const user = result.user;
-                        localStorage.setItem('hp_currentUser', JSON.stringify({
-                            name: user.displayName, email: user.email,
-                            picture: user.photoURL, provider: 'google'
-                        }));
-                        showMsg(msgId, `✅ Welcome, ${user.displayName}!`, 'success');
-                        setTimeout(() => window.location.href = 'index.html', 1000);
-                    }
+                addLog("Auth: Attempting Popup login...");
+                // Popup is safer for mobile cookie-blocking issues than redirect
+                const result = await auth.signInWithPopup(provider);
+                if (result.user) {
+                    addLog("Auth: Success via Popup!", "success");
+                    localStorage.setItem('hp_currentUser', JSON.stringify({
+                        name: result.user.displayName, email: result.user.email
+                    }));
+                    window.location.href = 'index.html';
                 }
             } catch (err) {
                 console.error("Auth Error:", err);
-                btn.classList.remove('loading');
-                btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;height:20px" alt="Google" /> Continue with Google';
+                addLog("Auth Error: " + err.code, "error");
 
                 if (err.code === 'auth/popup-blocked') {
-                    alert("Popup blocked! Redirecting instead...");
+                    addLog("Auth: Popup blocked. Falling back to Redirect...");
                     await auth.signInWithRedirect(provider);
+                } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
+                    btn.classList.remove('loading');
+                    btn.textContent = 'Continue with Google';
                 } else {
-                    showMsg(msgId, '❌ ' + err.message, 'error');
+                    // This error is exactly what the user saw (Missing initial state / Storage partitioned)
+                    alert("📱 MOBILE SECURITY NOTE:\n\nYour browser settings are blocking the login:\n1. Use Chrome or Safari (not inside another app).\n2. Turn OFF 'Incognito/Private' mode.\n3. In Settings, allow 'Third-Party Cookies'.\n\nNote: If you still see 'Missing Initial State', your phone settings are 100% blocking Firebase.");
+                    showMsg(msgId, "❌ Settings Blocked: Please allow cookies.", "error");
+                    btn.classList.remove('loading');
+                    btn.textContent = 'Continue with Google';
                 }
             }
         };
