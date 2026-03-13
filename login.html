@@ -649,6 +649,7 @@
                 showMsg('login-msg', `✅ Welcome back, ${name}! Redirecting...`, 'success');
                 setTimeout(() => window.location.href = 'index.html', 1300);
             } catch (err) {
+                console.error("Login Error:", err);
                 const msg = err.code === 'auth/user-not-found' ? '❌ No account with this email.' :
                     err.code === 'auth/wrong-password' ? '❌ Incorrect password.' :
                         err.code === 'auth/invalid-credential' ? '❌ Incorrect email or password.' :
@@ -675,6 +676,7 @@
                 showMsg('signup-msg', `🎉 Account created! Welcome, ${name}! Redirecting...`, 'success');
                 setTimeout(() => window.location.href = 'index.html', 1500);
             } catch (err) {
+                console.error("Signup Error:", err);
                 const msg = err.code === 'auth/email-already-in-use' ? '⚠️ Account already exists. Try signing in.' :
                     err.code === 'auth/weak-password' ? '⚠️ Choose a stronger password.' :
                         '❌ ' + err.message;
@@ -692,6 +694,7 @@
                 await auth.sendPasswordResetEmail(email);
                 showMsg('login-msg', `✅ Reset link sent to "${email}"! Check your inbox & spam folder.`, 'success');
             } catch (err) {
+                console.error("Password Reset Error:", err);
                 // Same message for security — don't reveal if email is registered
                 showMsg('login-msg', `✅ If "${email}" is registered, a reset link has been sent.`, 'success');
             }
