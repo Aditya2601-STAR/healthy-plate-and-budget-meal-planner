@@ -1914,10 +1914,7 @@
 
                 // Update Hero Button for Logged In state
                 const heroBtn = document.getElementById('heroActionBtn');
-                if (heroBtn) {
-                    heroBtn.innerHTML = '🍽 Start Planning';
-                    heroBtn.onclick = () => openPrefModal();
-                }
+                if (heroBtn) heroBtn.innerHTML = '🍽 Start Planning';
 
                 // Load saved plan from Firestore
                 loadPlanFromFirestore();
@@ -1931,12 +1928,18 @@
 
                 // Update Hero Button for Guest state
                 const heroBtn = document.getElementById('heroActionBtn');
-                if (heroBtn) {
-                    heroBtn.innerHTML = '🔐 Log In to Start';
-                    heroBtn.onclick = () => window.location.href = 'login.html';
-                }
+                if (heroBtn) heroBtn.innerHTML = '🔐 Log In to Start';
             }
         });
+
+        // Robust Hero Action Handler (Checks Auth state and decides action)
+        function handleHeroAction() {
+            if (currentUser) {
+                openPrefModal();
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
 
         // Helper: Generate consistent color based on name
         function getAvatarColor(name) {
@@ -1984,7 +1987,7 @@
         <p>A smart web-based meal planner that helps students balance nutrition and expenses — built for busy college
             life.</p>
         <div class="hero-btns">
-            <button id="heroActionBtn" class="btn-primary" onclick="openPrefModal()">🍽 Start Planning</button>
+            <button id="heroActionBtn" class="btn-primary" onclick="handleHeroAction()">🍽 Start Planning</button>
             <button class="btn-outline"
                 onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">Learn More</button>
         </div>
