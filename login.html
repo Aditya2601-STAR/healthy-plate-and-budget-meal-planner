@@ -550,22 +550,7 @@
 
         </div>
 
-        <!-- Diagnostic Log for Mobile Debugging -->
-        <div id="debug-box"
-            style="display:none;margin-top:20px;padding:15px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;font-family:monospace;font-size:12px;color:#475569;max-height:200px;overflow-y:auto;">
-            <div
-                style="font-weight:bold;margin-bottom:8px;color:#059669;display:flex;justify-content:space-between;align-items:center;">
-                <span>System Diagnostics</span>
-                <div style="display:flex;gap:8px;">
-                    <button onclick="runConnectionTest()"
-                        style="padding:2px 8px;font-size:10px;background:#059669;color:white;border:none;border-radius:4px;cursor:pointer;">Run
-                        Test</button>
-                    <button onclick="document.getElementById('log-content').innerHTML=''"
-                        style="border:none;background:none;color:#94a3b8;cursor:pointer;font-size:10px;">Clear</button>
-                </div>
-            </div>
-            <div id="log-content"></div>
-        </div>
+    </div>
     </div>
 
     <!-- Firebase compat SDK (works on file://, Live Server & GitHub Pages) -->
@@ -588,26 +573,9 @@
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        function addLog(msg, type = "info") {
-            const box = document.getElementById('debug-box');
-            const log = document.getElementById('log-content');
-            if (box) box.style.display = 'block';
-            if (log) {
-                const color = type === 'error' ? '#dc2626' : (type === 'success' ? '#059669' : '#475569');
-                log.innerHTML += `<div style="color:${color};margin-bottom:4px;border-bottom:1px solid #f1f5f9;padding-bottom:2px;">[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}] ${msg}</div>`;
-                log.scrollTop = log.scrollHeight;
-            }
-        }
-
-        // Force LOCAL persistence for cross-tab stability
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .then(() => addLog("System: Persistence - LOCAL"))
-            .catch(e => addLog("System: Persistence Error: " + e.message, "error"));
-
-        // 1. Monitor Auth State (Most reliable way to catch a return-from-redirect user)
+        // 1. Monitor Auth State
         auth.onAuthStateChanged((user) => {
             if (user) {
-                addLog(`Auth: User found - ${user.email}`, "success");
                 localStorage.setItem('hp_currentUser', JSON.stringify({
                     name: user.displayName || user.email.split('@')[0],
                     email: user.email,
@@ -619,61 +587,18 @@
                 const msgId = isLogin ? 'login-msg' : 'signup-msg';
                 showMsg(msgId, `✅ Success! Redirecting...`, 'success');
                 setTimeout(() => window.location.href = 'index.html', 800);
-            } else {
-                addLog("Auth: Waiting for session...");
             }
         });
 
         // 2. Explicit Redirect Result Handler
-        auth.getRedirectResult().then((result) => {
-            if (result && result.user) {
-                addLog("Auth: Redirect result caught", "success");
+        auth.getRedirectResult().catch((error) => {
+            console.error("Auth Error:", error);
+            if (error.code !== 'auth/web-storage-unsupported') {
+                showMsg('login-msg', '❌ ' + error.message, 'error');
             }
-        }).catch((error) => {
-            addLog("Auth Redirect Error: " + error.code, "error");
-            if (window.innerWidth < 768 && error.code !== 'auth/web-storage-unsupported') {
-                alert("Mobile Auth Note: " + error.message);
-            }
-            showMsg('login-msg', '❌ ' + error.message, 'error');
         });
 
-        addLog(`Protocol: ${window.location.protocol} | Host: ${window.location.hostname}`);
 
-        window.runConnectionTest = async function () {
-            addLog("Test: Starting connection check...");
-
-            // Check Storage
-            try {
-                localStorage.setItem('hp_test', '1');
-                localStorage.removeItem('hp_test');
-                addLog("Test: LocalStorage - WORKING", "success");
-            } catch (e) {
-                addLog("Test: LocalStorage - BLOCKED", "error");
-            }
-
-            // Check Cookies
-            if (navigator.cookieEnabled) {
-                addLog("Test: Cookies - ENABLED", "success");
-            } else {
-                addLog("Test: Cookies - DISABLED", "error");
-            }
-
-            // Check Firebase User
-            const user = auth.currentUser;
-            if (user) {
-                addLog("Test: Active User detected: " + user.email, "success");
-            } else {
-                addLog("Test: No user found in current memory.");
-            }
-
-            // Check Redirect Result again
-            try {
-                const result = await auth.getRedirectResult();
-                addLog("Test: Redirect Result - " + (result && result.user ? "USER PRESENT" : "EMPTY"));
-            } catch (e) {
-                addLog("Test: Redirect Error - " + e.code, "error");
-            }
-        };
 
         window.signInWithGoogle = async function () {
             const isLogin = document.getElementById('form-login').classList.contains('active');
@@ -690,11 +615,9 @@
             btn.textContent = '⏳ Starting...';
 
             try {
-                addLog("Auth: Attempting Popup login...");
-                // Popup is safer for mobile cookie-blocking issues than redirect
+                // Popup is safer for storage partitioned issues than redirect
                 const result = await auth.signInWithPopup(provider);
                 if (result.user) {
-                    addLog("Auth: Success via Popup!", "success");
                     localStorage.setItem('hp_currentUser', JSON.stringify({
                         name: result.user.displayName, email: result.user.email
                     }));
@@ -702,17 +625,15 @@
                 }
             } catch (err) {
                 console.error("Auth Error:", err);
-                addLog("Auth Error: " + err.code, "error");
 
                 if (err.code === 'auth/popup-blocked') {
-                    addLog("Auth: Popup blocked. Falling back to Redirect...");
                     await auth.signInWithRedirect(provider);
                 } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
                     btn.classList.remove('loading');
                     btn.textContent = 'Continue with Google';
                 } else {
-                    // This error is exactly what the user saw (Missing initial state / Storage partitioned)
-                    alert("📱 MOBILE SECURITY NOTE:\n\nYour browser settings are blocking the login:\n1. Use Chrome or Safari (not inside another app).\n2. Turn OFF 'Incognito/Private' mode.\n3. In Settings, allow 'Third-Party Cookies'.\n\nNote: If you still see 'Missing Initial State', your phone settings are 100% blocking Firebase.");
+                    // This handles browsers with blocked cookies/storage (Missing Initial State error)
+                    alert("📱 MOBILE SECURITY NOTE:\n\nYour browser settings are blocking the login:\n1. Use Chrome or Safari (not inside another app like WhatsApp).\n2. Turn OFF 'Incognito/Private' mode.\n3. In Settings, allow 'Third-Party Cookies'.");
                     showMsg(msgId, "❌ Settings Blocked: Please allow cookies.", "error");
                     btn.classList.remove('loading');
                     btn.textContent = 'Continue with Google';

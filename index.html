@@ -1790,13 +1790,31 @@
                 if (loginBtn) loginBtn.style.display = 'none';
                 if (logoutBtn) logoutBtn.style.display = 'inline-block';
 
+                // Update Hero Button for Logged In state
+                const heroBtn = document.getElementById('heroActionBtn');
+                if (heroBtn) {
+                    heroBtn.innerHTML = '🍽 Start Planning';
+                    heroBtn.onclick = () => openPrefModal();
+                }
+
                 // Load saved plan from Firestore
                 loadPlanFromFirestore();
             } else {
                 currentUser = null;
-                document.getElementById('navUserGreet').style.display = 'none';
-                document.getElementById('navLoginBtn').style.display = 'inline-block';
-                document.getElementById('navLogoutBtn').style.display = 'none';
+                const greet = document.getElementById('navUserGreet');
+                const loginBtn = document.getElementById('navLoginBtn');
+                const logoutBtn = document.getElementById('navLogoutBtn');
+
+                if (greet) greet.style.display = 'none';
+                if (loginBtn) loginBtn.style.display = 'inline-block';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+
+                // Update Hero Button for Guest state
+                const heroBtn = document.getElementById('heroActionBtn');
+                if (heroBtn) {
+                    heroBtn.innerHTML = '🔐 Log In to Start';
+                    heroBtn.onclick = () => window.location.href = 'login.html';
+                }
             }
         });
 
@@ -1815,7 +1833,7 @@
         <p>A smart web-based meal planner that helps students balance nutrition and expenses — built for busy college
             life.</p>
         <div class="hero-btns">
-            <button class="btn-primary" onclick="openPrefModal()">🍽 Start Planning</button>
+            <button id="heroActionBtn" class="btn-primary" onclick="openPrefModal()">🍽 Start Planning</button>
             <button class="btn-outline"
                 onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">Learn More</button>
         </div>
