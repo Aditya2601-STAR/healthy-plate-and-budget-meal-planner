@@ -551,19 +551,10 @@
         </div>
     </div>
 
-    <!-- =====================================================
-         FIREBASE SETUP
-         =====================================================
-         1. Go to https://firebase.google.com → create FREE project (no credit card)
-         2. Add a Web App → copy firebaseConfig below
-         3. In Firebase Console → Authentication → Sign-in method → Enable "Google"
-         4. Replace the firebaseConfig object below with your own values
-         ===================================================== -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut }
-            from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-
+    <!-- Firebase compat SDK (works on file://, Live Server & GitHub Pages) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script>
         // Firebase config — hpbm project
         const firebaseConfig = {
             apiKey: "AIzaSyDI7IdnrH5cX86qLLjsIfk7IcVX-X8Ut7I",
@@ -574,53 +565,33 @@
             appId: "1:625867213132:web:50c421229735f190c627e9"
         };
 
-        const CONFIGURED = firebaseConfig.apiKey !== 'YOUR_API_KEY';
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const provider = new firebase.auth.GoogleAuthProvider();
 
-        // If configured — initialise Firebase
-        if (CONFIGURED) {
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const provider = new GoogleAuthProvider();
-
-            // Expose to global scope so onclick handlers can call it
-            window.signInWithGoogle = async function () {
-                const btn = document.getElementById('form-login').classList.contains('active')
-                    ? document.getElementById('google-login-btn')
-                    : document.getElementById('google-signup-btn');
-                btn.classList.add('loading');
-                btn.textContent = '⏳ Signing in...';
-                try {
-                    const result = await signInWithPopup(auth, provider);
-                    const user = result.user;
-                    localStorage.setItem('hp_currentUser', JSON.stringify({
-                        name: user.displayName,
-                        email: user.email,
-                        picture: user.photoURL,
-                        provider: 'google'
-                    }));
-                    const msgId = document.getElementById('form-login').classList.contains('active') ? 'login-msg' : 'signup-msg';
-                    showMsg(msgId, `✅ Welcome, ${user.displayName}! Redirecting...`, 'success');
-                    setTimeout(() => window.location.href = 'index.html', 1300);
-                } catch (err) {
-                    btn.classList.remove('loading');
-                    btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;height:20px" alt="Google" /> Continue with Google';
-                    const msgId = document.getElementById('form-login').classList.contains('active') ? 'login-msg' : 'signup-msg';
-                    if (err.code !== 'auth/popup-closed-by-user') {
-                        showMsg(msgId, '❌ Google sign-in failed: ' + err.message, 'error');
-                    }
+        window.signInWithGoogle = async function () {
+            const isLogin = document.getElementById('form-login').classList.contains('active');
+            const btn = document.getElementById(isLogin ? 'google-login-btn' : 'google-signup-btn');
+            const msgId = isLogin ? 'login-msg' : 'signup-msg';
+            btn.classList.add('loading');
+            btn.textContent = '⏳ Signing in...';
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                localStorage.setItem('hp_currentUser', JSON.stringify({
+                    name: user.displayName, email: user.email,
+                    picture: user.photoURL, provider: 'google'
+                }));
+                showMsg(msgId, `✅ Welcome, ${user.displayName}! Redirecting...`, 'success');
+                setTimeout(() => window.location.href = 'index.html', 1300);
+            } catch (err) {
+                btn.classList.remove('loading');
+                btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;height:20px" alt="Google" /> Continue with Google';
+                if (err.code !== 'auth/popup-closed-by-user') {
+                    showMsg(msgId, '❌ ' + err.message, 'error');
                 }
-            };
-
-        } else {
-            // Not configured — show setup banners
-            document.getElementById('setup-banner-login').style.display = 'block';
-            document.getElementById('setup-banner-signup').style.display = 'block';
-
-            window.signInWithGoogle = function () {
-                const msgId = document.getElementById('form-login').classList.contains('active') ? 'login-msg' : 'signup-msg';
-                showMsg(msgId, '⚙️ Add your Firebase config in login.html to enable Google Sign-In. It\'s free!', 'error');
-            };
-        }
+            }
+        };
     </script>
 
     <script>
