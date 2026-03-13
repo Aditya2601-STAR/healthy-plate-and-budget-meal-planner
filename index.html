@@ -123,6 +123,82 @@
             object-fit: cover;
         }
 
+        .user-profile-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar-trigger {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .user-avatar-trigger:active {
+            transform: scale(0.95);
+        }
+
+        .avatar-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            padding: 8px 0;
+        }
+
+        .avatar-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .avatar-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            background: var(--white);
+            transform: rotate(45deg);
+        }
+
+        .dropdown-item {
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .dropdown-item.logout {
+            color: var(--red);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 4px 0;
+        }
+
         /* ===== HERO ===== */
         .hero {
             background: linear-gradient(135deg, #e8f5e9 0%, #fff8f0 100%);
@@ -1770,13 +1846,25 @@
             <li><a href="#about">About</a></li>
             <li><a href="#team">Team</a></li>
         </ul>
-        <div style="display:flex;align-items:center;gap:1rem;">
+        <div style="display:flex;align-items:center;gap:1.2rem;">
             <a id="navLoginBtn" href="login.html" class="nav-btn"
                 style="text-decoration:none;display:inline-block;">Login</a>
-            <div id="userProfileArea" style="display:none;align-items:center;gap:.8rem;">
-                <div class="user-avatar" id="navUserAvatar" title="User Profile">?</div>
-                <button class="nav-btn" style="background:var(--red); padding: .4rem 1rem; font-size: .8rem;"
-                    onclick="navLogout()">Logout</button>
+
+            <div id="userProfileArea" class="user-profile-wrapper" style="display:none;">
+                <div class="user-avatar user-avatar-trigger" id="navUserAvatar" onclick="toggleDropdown(event)">?</div>
+                <div class="avatar-dropdown" id="avatarDropdown">
+                    <div class="dropdown-item"
+                        style="cursor: default; background: transparent; border-bottom: 1px solid #f1f5f9;">
+                        <span id="dropdownUserName" style="font-weight: 800; color: var(--green);">User</span>
+                    </div>
+                    <div class="dropdown-item" onclick="openPrefModal()">
+                        <span>⚙️</span> Preferences
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item logout" onclick="navLogout()">
+                        <span>🏃</span> Logout
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -1810,6 +1898,9 @@
 
                 if (loginBtn) loginBtn.style.display = 'none';
                 if (profileArea) profileArea.style.display = 'flex';
+
+                const nameDisplay = document.getElementById('dropdownUserName');
+                if (nameDisplay) nameDisplay.textContent = name;
 
                 if (avatar) {
                     if (user.photoURL) {
@@ -1853,6 +1944,21 @@
                 window.location.reload();
             } catch (e) { console.error("Logout Error:", e); }
         }
+
+        // Dropdown Toggle Logic
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('avatarDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', () => {
+            const dropdown = document.getElementById('avatarDropdown');
+            if (dropdown && dropdown.classList.contains('active')) {
+                dropdown.classList.remove('active');
+            }
+        });
     </script>
 
     <section class="hero">
