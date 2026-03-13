@@ -1756,7 +1756,21 @@
             <button class="nav-btn" onclick="openPrefModal()">Try Now</button>
         </div>
     </nav>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script>
+        // Firebase config — same as login.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyDI7IdnrH5cX86qLLjsIfk7IcVX-X8Ut7I",
+            authDomain: "hpbm-ad2601.firebaseapp.com",
+            projectId: "hpbm-ad2601",
+            storageBucket: "hpbm-ad2601.firebasestorage.app",
+            messagingSenderId: "625867213132",
+            appId: "1:625867213132:web:50c421229735f190c627e9"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
         (function () {
             var user = null;
             try { user = JSON.parse(localStorage.getItem('hp_currentUser')); } catch (e) { }
@@ -1769,7 +1783,9 @@
                 if (logoutBtn) logoutBtn.style.display = 'inline-block';
             }
         })();
-        function navLogout() {
+
+        async function navLogout() {
+            try { await auth.signOut(); } catch (e) { }
             localStorage.removeItem('hp_currentUser');
             window.location.reload();
         }

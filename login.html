@@ -635,25 +635,31 @@
             label.style.color = score > 0 ? colors[score - 1] : '#6b7280';
         }
 
-        // ===== Email Login =====
-        function handleLogin() {
+        // ===== Email Login — Firebase Auth =====
+        async function handleLogin() {
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
             if (!email || !password) { showMsg('login-msg', '⚠️ Please fill in all fields.', 'error'); return; }
             if (!validEmail(email)) { showMsg('login-msg', '⚠️ Enter a valid email.', 'error'); return; }
-            const users = JSON.parse(localStorage.getItem('hp_users') || '[]');
-            const user = users.find(u => u.email === email && u.password === password);
-            if (user) {
-                localStorage.setItem('hp_currentUser', JSON.stringify({ name: user.name, email: user.email }));
-                showMsg('login-msg', `✅ Welcome back, ${user.name}! Redirecting...`, 'success');
+            try {
+                const result = await auth.signInWithEmailAndPassword(email, password);
+                const user = result.user;
+                const name = user.displayName || email.split('@')[0];
+                localStorage.setItem('hp_currentUser', JSON.stringify({ name, email: user.email }));
+                showMsg('login-msg', `✅ Welcome back, ${name}! Redirecting...`, 'success');
                 setTimeout(() => window.location.href = 'index.html', 1300);
-            } else {
-                showMsg('login-msg', '❌ Incorrect email or password.', 'error');
+            } catch (err) {
+                const msg = err.code === 'auth/user-not-found' ? '❌ No account with this email.' :
+                    err.code === 'auth/wrong-password' ? '❌ Incorrect password.' :
+                        err.code === 'auth/invalid-credential' ? '❌ Incorrect email or password.' :
+                            err.code === 'auth/too-many-requests' ? '⚠️ Too many attempts. Try later.' :
+                                '❌ ' + err.message;
+                showMsg('login-msg', msg, 'error');
             }
         }
 
-        // ===== Email Signup =====
-        function handleSignup() {
+        // ===== Email Signup — Firebase Auth =====
+        async function handleSignup() {
             const name = document.getElementById('signup-name').value.trim();
             const email = document.getElementById('signup-email').value.trim();
             const password = document.getElementById('signup-password').value;
@@ -662,20 +668,33 @@
             if (!validEmail(email)) { showMsg('signup-msg', '⚠️ Enter a valid email.', 'error'); return; }
             if (password.length < 8) { showMsg('signup-msg', '⚠️ Password must be at least 8 characters.', 'error'); return; }
             if (password !== confirm) { showMsg('signup-msg', '❌ Passwords do not match.', 'error'); return; }
-            const users = JSON.parse(localStorage.getItem('hp_users') || '[]');
-            if (users.find(u => u.email === email)) { showMsg('signup-msg', '⚠️ Account already exists. Try signing in.', 'error'); return; }
-            users.push({ name, email, password });
-            localStorage.setItem('hp_users', JSON.stringify(users));
-            localStorage.setItem('hp_currentUser', JSON.stringify({ name, email }));
-            showMsg('signup-msg', `🎉 Account created! Welcome, ${name}! Redirecting...`, 'success');
-            setTimeout(() => window.location.href = 'index.html', 1500);
+            try {
+                const result = await auth.createUserWithEmailAndPassword(email, password);
+                await result.user.updateProfile({ displayName: name });
+                localStorage.setItem('hp_currentUser', JSON.stringify({ name, email }));
+                showMsg('signup-msg', `🎉 Account created! Welcome, ${name}! Redirecting...`, 'success');
+                setTimeout(() => window.location.href = 'index.html', 1500);
+            } catch (err) {
+                const msg = err.code === 'auth/email-already-in-use' ? '⚠️ Account already exists. Try signing in.' :
+                    err.code === 'auth/weak-password' ? '⚠️ Choose a stronger password.' :
+                        '❌ ' + err.message;
+                showMsg('signup-msg', msg, 'error');
+            }
         }
 
-        function showForgot(e) {
+        // ===== Forgot Password — sends REAL reset email via Firebase =====
+        async function showForgot(e) {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
-            if (!email) { showMsg('login-msg', '✉️ Enter your email above first.', 'error'); return; }
-            showMsg('login-msg', `✅ If "${email}" exists, a reset link has been sent.`, 'success');
+            if (!email) { showMsg('login-msg', '✉️ Enter your email address above first.', 'error'); return; }
+            if (!validEmail(email)) { showMsg('login-msg', '⚠️ Enter a valid email address.', 'error'); return; }
+            try {
+                await auth.sendPasswordResetEmail(email);
+                showMsg('login-msg', `✅ Reset link sent to "${email}"! Check your inbox & spam folder.`, 'success');
+            } catch (err) {
+                // Same message for security — don't reveal if email is registered
+                showMsg('login-msg', `✅ If "${email}" is registered, a reset link has been sent.`, 'success');
+            }
         }
 
         function showSetupGuide(e) {
