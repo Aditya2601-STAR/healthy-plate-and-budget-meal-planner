@@ -1753,11 +1753,11 @@
                 style="text-decoration:none;display:inline-block;">Login</a>
             <button id="navLogoutBtn" class="nav-btn" style="display:none;background:var(--red);"
                 onclick="navLogout()">Logout</button>
-            <button class="nav-btn" onclick="openPrefModal()">Try Now</button>
         </div>
     </nav>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script>
         // Firebase config — same as login.html
         const firebaseConfig = {
@@ -1770,24 +1770,42 @@
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        (function () {
-            var user = null;
-            try { user = JSON.parse(localStorage.getItem('hp_currentUser')); } catch (e) { }
-            if (user && user.name) {
-                var greet = document.getElementById('navUserGreet');
-                var loginBtn = document.getElementById('navLoginBtn');
-                var logoutBtn = document.getElementById('navLogoutBtn');
-                if (greet) { greet.textContent = 'Hi, ' + user.name.split(' ')[0] + '!'; greet.style.display = 'inline'; }
+        // Global User State
+        let currentUser = null;
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                const name = user.displayName || user.email.split('@')[0];
+                const greet = document.getElementById('navUserGreet');
+                const loginBtn = document.getElementById('navLoginBtn');
+                const logoutBtn = document.getElementById('navLogoutBtn');
+
+                if (greet) {
+                    greet.textContent = 'Hi, ' + name.split(' ')[0] + '!';
+                    greet.style.display = 'inline';
+                }
                 if (loginBtn) loginBtn.style.display = 'none';
                 if (logoutBtn) logoutBtn.style.display = 'inline-block';
+
+                // Load saved plan from Firestore
+                loadPlanFromFirestore();
+            } else {
+                currentUser = null;
+                document.getElementById('navUserGreet').style.display = 'none';
+                document.getElementById('navLoginBtn').style.display = 'inline-block';
+                document.getElementById('navLogoutBtn').style.display = 'none';
             }
-        })();
+        });
 
         async function navLogout() {
-            try { await auth.signOut(); } catch (e) { }
-            localStorage.removeItem('hp_currentUser');
-            window.location.reload();
+            try {
+                await auth.signOut();
+                localStorage.removeItem('hp_currentUser');
+                window.location.reload();
+            } catch (e) { console.error("Logout Error:", e); }
         }
     </script>
 
@@ -2382,6 +2400,7 @@
             plate = plates[activeMeal];
             renderPlate();
             updateTotals();
+            savePlanToFirestore();
             showToast(`✅ Added ${item.name}`);
         }
 
@@ -2390,6 +2409,7 @@
             plate = plates[activeMeal];
             renderPlate();
             updateTotals();
+            savePlanToFirestore();
         }
 
         function renderPlate() {
@@ -2404,7 +2424,19 @@
         }
 
         function updateTotals() {
-            const budget = parseFloat(document.getElementById('budgetInput').value) || 0;
+            const budgetInput = document.getElementById('budgetInput');
+            const budget = parseFloat(budgetInput.value) || 0;
+
+            // Sync manual budget changes back to userPrefs
+            if (userPrefs.budget !== budget) {
+                userPrefs.budget = budget;
+                // If it's a manual edit (not just initial load), save to DB
+                if (currentUser) {
+                    savePlanToFirestore();
+                    updatePlannerBanner();
+                }
+            }
+
             const tCost = plate.filter(f => !f.free).reduce((s, f) => s + f.price, 0);
             const tCal = plate.reduce((s, f) => s + (f.cal || 0), 0);
             const tPro = plate.reduce((s, f) => s + (f.pro || 0), 0);
@@ -2481,6 +2513,7 @@
             document.getElementById('budgetInput').value = userPrefs.budget;
             generateRecommendations();
             closePrefModal();
+            savePlanToFirestore();
         }
 
         let currentRecommendations = [];
@@ -2559,6 +2592,7 @@
             plate = plates[activeMeal];
             document.getElementById('recoOverlay').classList.remove('active');
             revealPlanner();
+            savePlanToFirestore();
 
             const toast = document.createElement('div');
             toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--green);color:white;padding:15px 25px;border-radius:50px;font-weight:800;z-index:10000;animation:slideDown 0.5s ease;';
@@ -2585,6 +2619,46 @@
             banner.style.cssText = 'background:var(--green);color:#fff;border-radius:12px;padding:.7rem;margin-bottom:1rem;font-weight:700;';
             document.querySelector('#planner .section-sub').insertAdjacentElement('afterend', banner);
             banner.innerText = `🎯 Goal: ${userPrefs.goal} | 💰 ₹${userPrefs.budget}`;
+        }
+
+        // ===== FIRESTORE PERSISTENCE =====
+        async function savePlanToFirestore() {
+            if (!currentUser) return;
+            try {
+                await db.collection('users').doc(currentUser.uid).set({
+                    preferences: userPrefs,
+                    plates: plates,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log("Plan saved to Firestore.");
+            } catch (err) {
+                console.error("Save Error:", err);
+            }
+        }
+
+        async function loadPlanFromFirestore() {
+            if (!currentUser) return;
+            try {
+                const doc = await db.collection('users').doc(currentUser.uid).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.preferences) {
+                        Object.assign(userPrefs, data.preferences);
+                        document.getElementById('budgetInput').value = userPrefs.budget;
+                    }
+                    if (data.plates) {
+                        plates = data.plates;
+                        plate = plates[activeMeal];
+                    }
+                    // Refresh UI
+                    revealPlanner();
+                    console.log("Plan loaded from Firestore.");
+                } else {
+                    console.log("No saved plan found for user.");
+                }
+            } catch (err) {
+                console.error("Load Error:", err);
+            }
         }
     </script>
 
