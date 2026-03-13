@@ -549,6 +549,17 @@
             </div>
 
         </div>
+
+        <!-- Diagnostic Log for Mobile Debugging -->
+        <div id="debug-box"
+            style="display:none;margin-top:20px;padding:15px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;font-family:monospace;font-size:12px;color:#475569;max-height:150px;overflow-y:auto;">
+            <div style="font-weight:bold;margin-bottom:8px;color:#059669;display:flex;justify-content:space-between;">
+                <span>System Diagnostics</span>
+                <button onclick="document.getElementById('log-content').innerHTML=''"
+                    style="border:none;background:none;color:#94a3b8;cursor:pointer;">Clear</button>
+            </div>
+            <div id="log-content"></div>
+        </div>
     </div>
 
     <!-- Firebase compat SDK (works on file://, Live Server & GitHub Pages) -->
@@ -571,10 +582,26 @@
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
 
+        function addLog(msg, type = "info") {
+            const box = document.getElementById('debug-box');
+            const log = document.getElementById('log-content');
+            if (box) box.style.display = 'block';
+            if (log) {
+                const color = type === 'error' ? '#dc2626' : (type === 'success' ? '#059669' : '#475569');
+                log.innerHTML += `<div style="color:${color};margin-bottom:4px;border-bottom:1px solid #f1f5f9;padding-bottom:2px;">[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}] ${msg}</div>`;
+                log.scrollTop = log.scrollHeight;
+            }
+        }
+
+        // Force LOCAL persistence for cross-tab stability
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => addLog("System: Persistence - LOCAL"))
+            .catch(e => addLog("System: Persistence Error: " + e.message, "error"));
+
         // 1. Monitor Auth State (Most reliable way to catch a return-from-redirect user)
         auth.onAuthStateChanged((user) => {
             if (user) {
-                console.log("User detected via onAuthStateChanged:", user.email);
+                addLog(`Auth: User found - ${user.email}`, "success");
                 localStorage.setItem('hp_currentUser', JSON.stringify({
                     name: user.displayName || user.email.split('@')[0],
                     email: user.email,
@@ -582,24 +609,29 @@
                     provider: 'google'
                 }));
 
-                // Show success on whichever tab is active
                 const isLogin = document.getElementById('form-login').classList.contains('active');
                 const msgId = isLogin ? 'login-msg' : 'signup-msg';
-                showMsg(msgId, `✅ Success! Welcome, ${user.displayName || 'User'}.`, 'success');
-
-                // Redirect to main page
+                showMsg(msgId, `✅ Success! Redirecting...`, 'success');
                 setTimeout(() => window.location.href = 'index.html', 800);
+            } else {
+                addLog("Auth: Waiting for session...");
             }
         });
 
         // 2. Explicit Redirect Result Handler
-        auth.getRedirectResult().catch((error) => {
-            console.error("Auth Redirect Error:", error);
+        auth.getRedirectResult().then((result) => {
+            if (result && result.user) {
+                addLog("Auth: Redirect result caught", "success");
+            }
+        }).catch((error) => {
+            addLog("Auth Redirect Error: " + error.code, "error");
             if (window.innerWidth < 768 && error.code !== 'auth/web-storage-unsupported') {
                 alert("Mobile Auth Note: " + error.message);
             }
             showMsg('login-msg', '❌ ' + error.message, 'error');
         });
+
+        addLog(`Protocol: ${window.location.protocol} | Host: ${window.location.hostname}`);
 
         window.signInWithGoogle = async function () {
             const isLogin = document.getElementById('form-login').classList.contains('active');
