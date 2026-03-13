@@ -100,6 +100,29 @@
             background: var(--green-mid);
         }
 
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--green);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 2px solid var(--green-light);
+            overflow: hidden;
+            cursor: default;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         /* ===== HERO ===== */
         .hero {
             background: linear-gradient(135deg, #e8f5e9 0%, #fff8f0 100%);
@@ -1747,12 +1770,14 @@
             <li><a href="#about">About</a></li>
             <li><a href="#team">Team</a></li>
         </ul>
-        <div style="display:flex;align-items:center;gap:.8rem;">
-            <span id="navUserGreet" style="display:none;font-weight:700;font-size:.9rem;color:var(--green);"></span>
+        <div style="display:flex;align-items:center;gap:1rem;">
             <a id="navLoginBtn" href="login.html" class="nav-btn"
                 style="text-decoration:none;display:inline-block;">Login</a>
-            <button id="navLogoutBtn" class="nav-btn" style="display:none;background:var(--red);"
-                onclick="navLogout()">Logout</button>
+            <div id="userProfileArea" style="display:none;align-items:center;gap:.8rem;">
+                <div class="user-avatar" id="navUserAvatar" title="User Profile">?</div>
+                <button class="nav-btn" style="background:var(--red); padding: .4rem 1rem; font-size: .8rem;"
+                    onclick="navLogout()">Logout</button>
+            </div>
         </div>
     </nav>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1779,16 +1804,21 @@
             if (user) {
                 currentUser = user;
                 const name = user.displayName || user.email.split('@')[0];
-                const greet = document.getElementById('navUserGreet');
                 const loginBtn = document.getElementById('navLoginBtn');
-                const logoutBtn = document.getElementById('navLogoutBtn');
+                const profileArea = document.getElementById('userProfileArea');
+                const avatar = document.getElementById('navUserAvatar');
 
-                if (greet) {
-                    greet.textContent = 'Hi, ' + name.split(' ')[0] + '!';
-                    greet.style.display = 'inline';
-                }
                 if (loginBtn) loginBtn.style.display = 'none';
-                if (logoutBtn) logoutBtn.style.display = 'inline-block';
+                if (profileArea) profileArea.style.display = 'flex';
+
+                if (avatar) {
+                    if (user.photoURL) {
+                        avatar.innerHTML = `<img src="${user.photoURL}" alt="Profile">`;
+                    } else {
+                        avatar.textContent = name.charAt(0).toUpperCase();
+                        avatar.style.background = 'var(--green)';
+                    }
+                }
 
                 // Update Hero Button for Logged In state
                 const heroBtn = document.getElementById('heroActionBtn');
@@ -1801,13 +1831,11 @@
                 loadPlanFromFirestore();
             } else {
                 currentUser = null;
-                const greet = document.getElementById('navUserGreet');
                 const loginBtn = document.getElementById('navLoginBtn');
-                const logoutBtn = document.getElementById('navLogoutBtn');
+                const profileArea = document.getElementById('userProfileArea');
 
-                if (greet) greet.style.display = 'none';
                 if (loginBtn) loginBtn.style.display = 'inline-block';
-                if (logoutBtn) logoutBtn.style.display = 'none';
+                if (profileArea) profileArea.style.display = 'none';
 
                 // Update Hero Button for Guest state
                 const heroBtn = document.getElementById('heroActionBtn');
