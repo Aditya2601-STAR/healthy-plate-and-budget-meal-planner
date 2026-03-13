@@ -1747,8 +1747,33 @@
             <li><a href="#about">About</a></li>
             <li><a href="#team">Team</a></li>
         </ul>
-        <button class="nav-btn" onclick="openPrefModal()">Try Now</button>
+        <div style="display:flex;align-items:center;gap:.8rem;">
+            <span id="navUserGreet" style="display:none;font-weight:700;font-size:.9rem;color:var(--green);"></span>
+            <a id="navLoginBtn" href="login.html" class="nav-btn"
+                style="text-decoration:none;display:inline-block;">Login</a>
+            <button id="navLogoutBtn" class="nav-btn" style="display:none;background:var(--red);"
+                onclick="navLogout()">Logout</button>
+            <button class="nav-btn" onclick="openPrefModal()">Try Now</button>
+        </div>
     </nav>
+    <script>
+        (function () {
+            var user = null;
+            try { user = JSON.parse(localStorage.getItem('hp_currentUser')); } catch (e) { }
+            if (user && user.name) {
+                var greet = document.getElementById('navUserGreet');
+                var loginBtn = document.getElementById('navLoginBtn');
+                var logoutBtn = document.getElementById('navLogoutBtn');
+                if (greet) { greet.textContent = 'Hi, ' + user.name.split(' ')[0] + '!'; greet.style.display = 'inline'; }
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'inline-block';
+            }
+        })();
+        function navLogout() {
+            localStorage.removeItem('hp_currentUser');
+            window.location.reload();
+        }
+    </script>
 
     <section class="hero">
         <div class="hero-badge">🎓 Mini Project — DRIEMS 2024–25</div>
