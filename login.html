@@ -566,32 +566,39 @@
             appId: "1:625867213132:web:50c421229735f190c627e9"
         };
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        // Check for redirect result on page load (essential for mobile login)
-        auth.getRedirectResult().then((result) => {
-            if (result && result.user) {
-                const user = result.user;
+        // 1. Monitor Auth State (Most reliable way to catch a return-from-redirect user)
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log("User detected via onAuthStateChanged:", user.email);
                 localStorage.setItem('hp_currentUser', JSON.stringify({
-                    name: user.displayName, email: user.email,
-                    picture: user.photoURL, provider: 'google'
+                    name: user.displayName || user.email.split('@')[0],
+                    email: user.email,
+                    picture: user.photoURL,
+                    provider: 'google'
                 }));
+
+                // Show success on whichever tab is active
                 const isLogin = document.getElementById('form-login').classList.contains('active');
                 const msgId = isLogin ? 'login-msg' : 'signup-msg';
-                showMsg(msgId, `✅ Welcome, ${user.displayName}!`, 'success');
-                setTimeout(() => window.location.href = 'index.html', 1000);
+                showMsg(msgId, `✅ Success! Welcome, ${user.displayName || 'User'}.`, 'success');
+
+                // Redirect to main page
+                setTimeout(() => window.location.href = 'index.html', 800);
             }
-        }).catch((error) => {
-            console.error("Redirect Auth Error:", error);
-            // Alert help for mobile users where console isn't visible
-            if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-                alert("Mobile Auth Error: " + error.message + "\nProtocol: " + window.location.protocol + "\nHost: " + window.location.hostname);
+        });
+
+        // 2. Explicit Redirect Result Handler
+        auth.getRedirectResult().catch((error) => {
+            console.error("Auth Redirect Error:", error);
+            if (window.innerWidth < 768 && error.code !== 'auth/web-storage-unsupported') {
+                alert("Mobile Auth Note: " + error.message);
             }
-            const isLogin = document.getElementById('form-login').classList.contains('active');
-            const msgId = isLogin ? 'login-msg' : 'signup-msg';
-            showMsg(msgId, '❌ ' + error.message, 'error');
+            showMsg('login-msg', '❌ ' + error.message, 'error');
         });
 
         window.signInWithGoogle = async function () {
