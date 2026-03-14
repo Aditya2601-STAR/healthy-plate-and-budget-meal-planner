@@ -419,18 +419,14 @@
 
         .planner-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1.6fr 1fr;
             gap: 1.5rem;
             align-items: start;
         }
 
-        @media(max-width:1100px) {
+        @media(max-width:900px) {
             .planner-layout {
-                grid-template-columns: 1.2fr 1fr;
-            }
-
-            .planner-panel.price-panel {
-                grid-column: 1 / -1;
+                grid-template-columns: 1.3fr 1fr;
             }
         }
 
@@ -456,7 +452,7 @@
             }
         }
 
-        /* On desktop, the plate panel stacks its two child panels vertically */
+        /* On desktop, the plate panel stacks its child panels vertically */
         @media(min-width:751px) {
             .planner-panel.plate-column {
                 display: flex;
@@ -465,6 +461,18 @@
                 background: transparent;
                 box-shadow: none;
                 padding: 0;
+            }
+        }
+
+        /* Nutrition + Price side by side row inside plate column */
+        .nutrition-price-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media(max-width:900px) {
+            .nutrition-price-row {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -1998,19 +2006,6 @@
                         </div>
                         <div class="food-list" id="foodList"></div>
                     </div>
-                    <div class="planner-panel price-panel" id="panel-price">
-                        <h3>📊 Live Price Check</h3>
-                        <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 1rem;">Real Indian market
-                            prices
-                            via Agmarknet</p>
-                        <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
-                            <input type="text" id="priceQuery" placeholder="e.g. dal, paneer..."
-                                style="flex:1; border:2px solid #d1fae5; border-radius:10px; padding:.5rem .8rem; font-family:'Nunito',sans-serif; font-size:.95rem; outline:none;" />
-                            <button onclick="searchPrice()" class="add-btn" style="padding: 0.5rem 1rem;">Check</button>
-                        </div>
-                        <div id="priceResults" class="price-results" style="max-height: 500px; overflow-y: auto;"></div>
-                    </div>
-
                     <div class="planner-panel plate-column active-panel" id="panel-plate">
                         <div class="planner-panel" style="margin-bottom:1.5rem;">
                             <h3>🪣 Your Budget</h3>
@@ -2036,31 +2031,44 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="planner-panel">
-                            <h3>🔬 Nutrition Summary</h3>
-                            <div class="nutrition-summary">
-                                <div class="nut-row"><span class="nut-label">Calories</span>
-                                    <div class="nut-bar-bg">
-                                        <div class="nut-bar bar-cal" id="barCal" style="width:0%"></div>
-                                    </div><span class="nut-val" id="valCal">0 kcal</span>
+                        <div class="nutrition-price-row">
+                            <div class="planner-panel">
+                                <h3>🔬 Nutrition Summary</h3>
+                                <div class="nutrition-summary">
+                                    <div class="nut-row"><span class="nut-label">Calories</span>
+                                        <div class="nut-bar-bg">
+                                            <div class="nut-bar bar-cal" id="barCal" style="width:0%"></div>
+                                        </div><span class="nut-val" id="valCal">0 kcal</span>
+                                    </div>
+                                    <div class="nut-row"><span class="nut-label">Protein</span>
+                                        <div class="nut-bar-bg">
+                                            <div class="nut-bar bar-pro" id="barPro" style="width:0%"></div>
+                                        </div><span class="nut-val" id="valPro">0 g</span>
+                                    </div>
+                                    <div class="nut-row"><span class="nut-label">Fat</span>
+                                        <div class="nut-bar-bg">
+                                            <div class="nut-bar bar-fat" id="barFat" style="width:0%"></div>
+                                        </div><span class="nut-val" id="valFat">0 g</span>
+                                    </div>
+                                    <div class="nut-row"><span class="nut-label">Carbs</span>
+                                        <div class="nut-bar-bg">
+                                            <div class="nut-bar bar-carb" id="barCarb" style="width:0%"></div>
+                                        </div><span class="nut-val" id="valCarb">0 g</span>
+                                    </div>
                                 </div>
-                                <div class="nut-row"><span class="nut-label">Protein</span>
-                                    <div class="nut-bar-bg">
-                                        <div class="nut-bar bar-pro" id="barPro" style="width:0%"></div>
-                                    </div><span class="nut-val" id="valPro">0 g</span>
-                                </div>
-                                <div class="nut-row"><span class="nut-label">Fat</span>
-                                    <div class="nut-bar-bg">
-                                        <div class="nut-bar bar-fat" id="barFat" style="width:0%"></div>
-                                    </div><span class="nut-val" id="valFat">0 g</span>
-                                </div>
-                                <div class="nut-row"><span class="nut-label">Carbs</span>
-                                    <div class="nut-bar-bg">
-                                        <div class="nut-bar bar-carb" id="barCarb" style="width:0%"></div>
-                                    </div><span class="nut-val" id="valCarb">0 g</span>
-                                </div>
+                                <div class="suggestions" id="suggBox" style="display:none;"></div>
                             </div>
-                            <div class="suggestions" id="suggBox" style="display:none;"></div>
+                            <div class="planner-panel price-panel" id="panel-price">
+                                <h3>📊 Live Price Check</h3>
+                                <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 1rem;">Real Indian market
+                                    prices via Agmarknet</p>
+                                <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+                                    <input type="text" id="priceQuery" placeholder="e.g. dal, paneer..."
+                                        style="flex:1; border:2px solid #d1fae5; border-radius:10px; padding:.5rem .8rem; font-family:'Nunito',sans-serif; font-size:.95rem; outline:none;" />
+                                    <button onclick="searchPrice()" class="add-btn" style="padding: 0.5rem 1rem;">Check</button>
+                                </div>
+                                <div id="priceResults" class="price-results" style="max-height: 300px; overflow-y: auto;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
