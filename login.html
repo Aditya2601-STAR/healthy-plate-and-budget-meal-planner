@@ -586,7 +586,7 @@
                 const isLogin = document.getElementById('form-login').classList.contains('active');
                 const msgId = isLogin ? 'login-msg' : 'signup-msg';
                 showMsg(msgId, `✅ Success! Redirecting...`, 'success');
-                setTimeout(() => window.location.href = 'index.html', 800);
+                setTimeout(() => window.location.href = 'dashboard.html', 800);
             }
         });
 
@@ -621,7 +621,7 @@
                     localStorage.setItem('hp_currentUser', JSON.stringify({
                         name: result.user.displayName, email: result.user.email
                     }));
-                    window.location.href = 'index.html';
+                    window.location.href = 'dashboard.html';
                 }
             } catch (err) {
                 console.error("Auth Error:", err);
@@ -695,7 +695,7 @@
                 const name = user.displayName || email.split('@')[0];
                 localStorage.setItem('hp_currentUser', JSON.stringify({ name, email: user.email }));
                 showMsg('login-msg', `✅ Welcome back, ${name}! Redirecting...`, 'success');
-                setTimeout(() => window.location.href = 'index.html', 1300);
+                setTimeout(() => window.location.href = 'dashboard.html', 1300);
             } catch (err) {
                 console.error("Login Error:", err);
                 const msg = err.code === 'auth/user-not-found' ? '❌ No account with this email.' :
@@ -722,7 +722,7 @@
                 await result.user.updateProfile({ displayName: name });
                 localStorage.setItem('hp_currentUser', JSON.stringify({ name, email }));
                 showMsg('signup-msg', `🎉 Account created! Welcome, ${name}! Redirecting...`, 'success');
-                setTimeout(() => window.location.href = 'index.html', 1500);
+                setTimeout(() => window.location.href = 'dashboard.html', 1500);
             } catch (err) {
                 console.error("Signup Error:", err);
                 const msg = err.code === 'auth/email-already-in-use' ? '⚠️ Account already exists. Try signing in.' :
