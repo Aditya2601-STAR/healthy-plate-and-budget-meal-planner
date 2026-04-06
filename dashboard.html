@@ -470,6 +470,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
+
         @media(max-width:900px) {
             .nutrition-price-row {
                 grid-template-columns: 1fr;
@@ -956,8 +957,15 @@
         }
 
         @keyframes pulseRed {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .suggestions {
@@ -2094,14 +2102,17 @@
                             </div>
                             <div class="planner-panel price-panel" id="panel-price">
                                 <h3>📊 Live Price Check</h3>
-                                <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 1rem;">Real Indian market
+                                <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 1rem;">Real Indian
+                                    market
                                     prices via Agmarknet</p>
                                 <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
                                     <input type="text" id="priceQuery" placeholder="e.g. dal, paneer..."
                                         style="flex:1; border:2px solid #d1fae5; border-radius:10px; padding:.5rem .8rem; font-family:'Nunito',sans-serif; font-size:.95rem; outline:none;" />
-                                    <button onclick="searchPrice()" class="add-btn" style="padding: 0.5rem 1rem;">Check</button>
+                                    <button onclick="searchPrice()" class="add-btn"
+                                        style="padding: 0.5rem 1rem;">Check</button>
                                 </div>
-                                <div id="priceResults" class="price-results" style="max-height: 300px; overflow-y: auto;"></div>
+                                <div id="priceResults" class="price-results"
+                                    style="max-height: 300px; overflow-y: auto;"></div>
                             </div>
                         </div>
                     </div>
