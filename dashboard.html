@@ -2026,7 +2026,7 @@
                                     <div class="val" id="totalCost">₹0</div>
                                 </div>
                                 <div class="total-box">
-                                    <div class="lbl">Remaining</div>
+                                    <div class="lbl">Budget Left</div>
                                     <div class="val" id="remaining">₹100</div>
                                 </div>
                             </div>
@@ -2484,8 +2484,16 @@
 
             document.getElementById('totalCost').innerText = `₹${tCost}`;
             const remEl = document.getElementById('remaining');
-            remEl.innerText = `₹${rem}`;
-            remEl.className = 'val' + (rem < 0 ? ' warn' : '');
+            const remLbl = remEl.closest('.total-box').querySelector('.lbl');
+            if (rem < 0) {
+                remEl.innerText = `Over by ₹${Math.abs(rem)}`;
+                remEl.className = 'val warn';
+                remLbl.textContent = '⚠️ Over Budget';
+            } else {
+                remEl.innerText = `₹${rem}`;
+                remEl.className = 'val';
+                remLbl.textContent = 'Budget Left';
+            }
 
             const pTarget = Math.round(userPrefs.weight * (userPrefs.goal === 'gain' ? 2.0 : 1.6));
             updateBar('barCal', (tCal / 1000) * 100, tCal > 1000 ? 'var(--orange)' : 'var(--green)');
