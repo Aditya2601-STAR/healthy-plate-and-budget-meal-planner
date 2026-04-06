@@ -902,7 +902,7 @@
 
         .totals-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: .8rem;
             margin-top: 1rem;
         }
@@ -928,6 +928,36 @@
 
         .total-box .val.warn {
             color: var(--red);
+        }
+
+        .total-box.over-budget-box {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            transition: all 0.3s ease;
+        }
+
+        .total-box.over-budget-box.active-over {
+            background: #fee2e2;
+            border-color: #f87171;
+            animation: pulseRed 1s ease-in-out;
+        }
+
+        .total-box.over-budget-box .lbl {
+            color: #b91c1c;
+            font-weight: 700;
+        }
+
+        .total-box.over-budget-box .val {
+            color: #dc2626;
+        }
+
+        .total-box.over-budget-box .val.inactive {
+            color: #d1d5db;
+        }
+
+        @keyframes pulseRed {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .suggestions {
@@ -2029,6 +2059,10 @@
                                     <div class="lbl">Budget Left</div>
                                     <div class="val" id="remaining">₹100</div>
                                 </div>
+                                <div class="total-box over-budget-box">
+                                    <div class="lbl">⚠️ Over Budget</div>
+                                    <div class="val inactive" id="overBudget">₹0</div>
+                                </div>
                             </div>
                         </div>
                         <div class="nutrition-price-row">
@@ -2484,15 +2518,21 @@
 
             document.getElementById('totalCost').innerText = `₹${tCost}`;
             const remEl = document.getElementById('remaining');
-            const remLbl = remEl.closest('.total-box').querySelector('.lbl');
+            const overEl = document.getElementById('overBudget');
+            const overBox = overEl.closest('.total-box');
+
             if (rem < 0) {
-                remEl.innerText = `Over by ₹${Math.abs(rem)}`;
+                remEl.innerText = '₹0';
                 remEl.className = 'val warn';
-                remLbl.textContent = '⚠️ Over Budget';
+                overEl.innerText = `₹${Math.abs(rem)}`;
+                overEl.className = 'val';
+                overBox.classList.add('active-over');
             } else {
                 remEl.innerText = `₹${rem}`;
                 remEl.className = 'val';
-                remLbl.textContent = 'Budget Left';
+                overEl.innerText = '₹0';
+                overEl.className = 'val inactive';
+                overBox.classList.remove('active-over');
             }
 
             const pTarget = Math.round(userPrefs.weight * (userPrefs.goal === 'gain' ? 2.0 : 1.6));
