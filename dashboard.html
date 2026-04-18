@@ -2752,6 +2752,8 @@
                     console.log("Plan loaded from Firestore.");
                 } else {
                     console.log("No saved plan found for user.");
+                    // No saved plan — show preferences modal so user can get started
+                    openPrefModal();
                 }
             } catch (err) {
                 console.error("Load Error:", err);
