@@ -2757,6 +2757,8 @@
                 }
             } catch (err) {
                 console.error("Load Error:", err);
+                // Firestore failed — still let user use the planner
+                openPrefModal();
             }
         }
     </script>
