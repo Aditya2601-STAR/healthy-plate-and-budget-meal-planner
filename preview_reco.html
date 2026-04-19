@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview — New Recommendation UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #3a7d44;
+            --green-light: #e8f5e9;
+            --green-mid: #5aab63;
+            --orange: #f4a261;
+            --orange-light: #fff3e0;
+            --red: #e76f51;
+            --dark: #1b2d1e;
+            --gray: #6b7280;
+            --bg: #f9fdf9;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: rgba(255, 255, 255, 0.98);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            color: var(--dark);
+        }
+
+        .preview-badge {
+            background: var(--red);
+            color: white;
+            padding: .4rem 1.2rem;
+            border-radius: 20px;
+            font-size: .8rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            letter-spacing: .5px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            background: var(--green-light);
+            color: var(--green);
+            border: none;
+            border-radius: 25px;
+            padding: .5rem 1.2rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: .9rem;
+            cursor: pointer;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--dark);
+            margin-bottom: .5rem;
+        }
+
+        .subtitle {
+            color: var(--gray);
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .reco-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        @media(max-width: 850px) {
+            .reco-grid { grid-template-columns: 1fr; }
+        }
+
+        .reco-card {
+            position: relative;
+            background: var(--white);
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 1.8rem 1.5rem;
+            transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .reco-card:hover {
+            border-color: var(--green);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15);
+        }
+
+        .reco-card.best {
+            border-color: var(--green);
+            background: #f0fdf4;
+        }
+
+        .reco-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--green-light);
+            color: var(--green);
+            font-size: .7rem;
+            font-weight: 800;
+            padding: .3rem .7rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .reco-card.best .reco-badge {
+            background: var(--green);
+            color: white;
+        }
+
+        .reco-card h4 {
+            font-size: 1.2rem;
+            color: var(--dark);
+            font-weight: 800;
+            margin-bottom: .3rem;
+        }
+
+        .reco-score {
+            font-size: .78rem;
+            font-weight: 800;
+            color: var(--green);
+            margin-bottom: .8rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .score-bar-bg {
+            flex: 1;
+            max-width: 100px;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: var(--green);
+            transition: width .5s;
+        }
+
+        .reco-items {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+
+        .reco-items li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .5rem 0;
+            border-bottom: 1px dashed #f0f0f0;
+            font-size: .85rem;
+        }
+
+        .reco-items li:last-child { border-bottom: none; }
+
+        .item-name {
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .item-meta {
+            font-size: .75rem;
+            color: var(--gray);
+        }
+
+        .item-price {
+            background: var(--green-light);
+            color: var(--green);
+            border-radius: 8px;
+            padding: .15rem .5rem;
+            font-size: .78rem;
+            font-weight: 800;
+        }
+
+        .reco-totals {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 800;
+            font-size: .82rem;
+            padding-top: .8rem;
+            border-top: 2px solid #f0f0f0;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .reco-totals span { color: var(--dark); }
+
+        .reco-select-btn {
+            width: 100%;
+            background: #f3f4f6;
+            color: var(--dark);
+            border: none;
+            border-radius: 10px;
+            padding: .6rem;
+            font-weight: 700;
+            font-size: .85rem;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .reco-card:hover .reco-select-btn,
+        .reco-card.best .reco-select-btn {
+            background: var(--green);
+            color: white;
+        }
+
+        /* Protein Addons */
+        .protein-addons {
+            max-width: 1000px;
+            width: 100%;
+            background: var(--orange-light);
+            border: 2px solid rgba(244, 162, 97, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .protein-addons h4 {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #b45309;
+            margin-bottom: .3rem;
+        }
+
+        .protein-addons .gap-text {
+            font-size: .85rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .addon-chips {
+            display: flex;
+            gap: .6rem;
+            flex-wrap: wrap;
+        }
+
+        .addon-chip {
+            background: white;
+            border: 1.5px solid rgba(244, 162, 97, 0.4);
+            border-radius: 12px;
+            padding: .6rem 1rem;
+            font-size: .82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            flex-direction: column;
+            gap: .2rem;
+        }
+
+        .addon-chip:hover {
+            border-color: var(--orange);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 162, 97, 0.15);
+        }
+
+        .addon-chip .addon-name { color: var(--dark); }
+        .addon-chip .addon-meta { font-size: .72rem; color: var(--gray); }
+        .addon-chip .addon-ratio {
+            font-size: .68rem;
+            color: var(--green);
+            font-weight: 800;
+        }
+
+        /* Validation */
+        .validation-bar {
+            max-width: 1000px;
+            width: 100%;
+            background: var(--green-light);
+            border: 2px solid rgba(58, 125, 68, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .val-item {
+            text-align: center;
+        }
+
+        .val-item .val-label {
+            font-size: .72rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: .5px;
+        }
+
+        .val-item .val-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--green);
+        }
+
+        .val-item .val-value.warn { color: var(--orange); }
+
+        .skip-link {
+            margin-top: 2rem;
+            background: none;
+            border: none;
+            color: var(--gray);
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Nunito', sans-serif;
+            font-size: .9rem;
+        }
+
+        .divider {
+            width: 100%;
+            max-width: 1000px;
+            height: 1px;
+            background: #e5e7eb;
+            margin: 1.5rem 0;
+        }
+
+        .section-label {
+            font-size: .75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray);
+            align-self: flex-start;
+            max-width: 1000px;
+            width: 100%;
+            margin-bottom: .5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="preview-badge">⚠️ PREVIEW ONLY — This is how the new recommendation screen will look</div>
+
+    <button class="back-btn">← Back</button>
+
+    <h2>🥗 Personalized For You</h2>
+    <p class="subtitle">Based on your goal to <strong>gain weight</strong> and budget of <strong>₹100</strong>, here are your smartest picks for <strong>breakfast</strong>:</p>
+
+    <div class="section-label">🎯 Recommended Plans</div>
+
+    <div class="reco-grid">
+        <!-- Card 1: Best Match -->
+        <div class="reco-card best">
+            <span class="reco-badge">⭐ Top Pick</span>
+            <h4>🏆 Best Match</h4>
+            <div class="reco-score">
+                Score: 87/100
+                <div class="score-bar-bg"><div class="score-bar" style="width:87%"></div></div>
+            </div>
+            <ul class="reco-items">
+                <li>
+                    <div>
+                        <div class="item-name">✅ Poha (1 plate)</div>
+                        <div class="item-meta">180 kcal · 4g protein</div>
+                    </div>
+                    <span class="item-price">₹20</span>
+                </li>
+                <li>
+                    <div>
+                        <div class="item-name">✅ Sprouts (1 bowl)</div>
+                        <div class="item-meta">100 kcal · 8g protein</div>
+                    </div>
+                    <span class="item-price">₹10</span>
+                </li>
+                <li>
+                    <div>
+                        <div class="item-name">✅ Banana</div>
+                        <div class="item-meta">90 kcal · 1g protein</div>
+                    </div>
+                    <span class="item-price">₹8</span>
+                </li>
+            </ul>
+            <div class="reco-totals">
+                <div>💰 <span>₹38</span></div>
+                <div>🔥 <span>370 kcal</span></div>
+                <div>💪 <span>13g pro</span></div>
+            </div>
+            <button class="reco-select-btn">Select This Plan</button>
+        </div>
+
+        <!-- Card 2: Budget Saver -->
+        <div class="reco-card">
+            <span class="reco-badge">Budget Friendly</span>
+            <h4>💰 Budget Saver</h4>
+            <div class="reco-score">
+                Score: 74/100
+                <div class="score-bar-bg"><div class="score-bar" style="width:74%"></div></div>
+            </div>
+            <ul class="reco-items">
+                <li>
+                    <div>
+                        <div class="item-name">✅ Idli (2 pcs)</div>
+                        <div class="item-meta">130 kcal · 4g protein</div>
+                    </div>
+                    <span class="item-price">₹15</span>
+                </li>
+                <li>
+                    <div>
+                        <div class="item-name">✅ Sambar (1 bowl)</div>
+                        <div class="item-meta">80 kcal · 4g protein</div>
+                    </div>
+                    <span class="item-price">₹15</span>
+                </li>
+                <li>
+                    <div>
+                        <div class="item-name">✅ Buttermilk</div>
+                        <div class="item-meta">60 kcal · 3g protein</div>
+                    </div>
+                    <span class="item-price">₹10</span>
+                </li>
+            </ul>
+            <div class="reco-totals">
+                <div>💰 <span>₹40</span></div>
+                <div>🔥 <span>270 kcal</span></div>
+                <div>💪 <span>11g pro</span></div>
+            </div>
+            <button class="reco-select-btn">Select This Plan</button>
+        </div>
+
+        <!-- Card 3: Protein Power -->
+        <div class="reco-card">
+            <span class="reco-badge">Fitness Goal</span>
+            <h4>💪 Protein Power</h4>
+            <div class="reco-score">
+                Score: 71/100
+                <div class="score-bar-bg"><div class="score-bar" style="width:71%"></div></div>
+            </div>
+            <ul class="reco-items">
+                <li>
+                    <div>
+                        <div class="item-name">✅ Soya Chunks (1 bowl)</div>
+                        <div class="item-meta">170 kcal · 18g protein</div>
+                    </div>
+                    <span class="item-price">₹15</span>
+                </li>
+                <li>
+                    <div>
+                        <div class="item-name">✅ Paneer (50g)</div>
+                        <div class="item-meta">135 kcal · 9g protein</div>
+                    </div>
+                    <span class="item-price">₹20</span>
+                </li>
+                <li>
+                    <div>
+                        <div class="item-name">✅ Peanuts (50g)</div>
+                        <div class="item-meta">290 kcal · 13g protein</div>
+                    </div>
+                    <span class="item-price">₹10</span>
+                </li>
+            </ul>
+            <div class="reco-totals">
+                <div>💰 <span>₹45</span></div>
+                <div>🔥 <span>595 kcal</span></div>
+                <div>💪 <span>40g pro</span></div>
+            </div>
+            <button class="reco-select-btn">Select This Plan</button>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">⚡ Quick Validation</div>
+
+    <div class="validation-bar">
+        <div class="val-item">
+            <div class="val-label">Calories</div>
+            <div class="val-value">370 kcal</div>
+        </div>
+        <div class="val-item">
+            <div class="val-label">Protein</div>
+            <div class="val-value warn">13g / 43g</div>
+        </div>
+        <div class="val-item">
+            <div class="val-label">Budget Used</div>
+            <div class="val-value">₹38 / ₹100</div>
+        </div>
+        <div class="val-item">
+            <div class="val-label">Status</div>
+            <div class="val-value warn">⚠️ Low Protein</div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">⚡ Protein Boosters — Fill the gap!</div>
+
+    <div class="protein-addons">
+        <h4>⚡ You're ~30g short on protein for this meal</h4>
+        <p class="gap-text">Add any of these affordable boosters to hit your target. Sorted by best protein-per-rupee:</p>
+        <div class="addon-chips">
+            <div class="addon-chip">
+                <span class="addon-name">🫘 Soya Chunks (50g)</span>
+                <span class="addon-meta">26g protein · ₹12</span>
+                <span class="addon-ratio">🏅 2.2g protein/₹ — Best value!</span>
+            </div>
+            <div class="addon-chip">
+                <span class="addon-name">🥜 Peanuts (50g)</span>
+                <span class="addon-meta">13g protein · ₹10</span>
+                <span class="addon-ratio">1.3g protein/₹</span>
+            </div>
+            <div class="addon-chip">
+                <span class="addon-name">🫘 Sprouts (1 cup)</span>
+                <span class="addon-meta">8g protein · ₹10</span>
+                <span class="addon-ratio">0.8g protein/₹</span>
+            </div>
+            <div class="addon-chip">
+                <span class="addon-name">🥛 Paneer (50g)</span>
+                <span class="addon-meta">9g protein · ₹20</span>
+                <span class="addon-ratio">0.45g protein/₹</span>
+            </div>
+        </div>
+    </div>
+
+    <button class="skip-link">I'll skip and build my own plate from scratch</button>
+
+</body>
+</html>

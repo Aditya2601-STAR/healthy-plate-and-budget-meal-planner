@@ -1778,6 +1778,11 @@
             box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15);
         }
 
+        .reco-card.best {
+            border-color: var(--green);
+            background: #f0fdf4;
+        }
+
         .reco-badge {
             position: absolute;
             top: 12px;
@@ -1791,6 +1796,93 @@
             text-transform: uppercase;
         }
 
+        .reco-card.best .reco-badge {
+            background: var(--green);
+            color: white;
+        }
+
+        .reco-card h4 {
+            font-size: 1.2rem;
+            color: var(--dark);
+            font-weight: 800;
+            margin-bottom: .3rem;
+        }
+
+        .reco-score {
+            font-size: .78rem;
+            font-weight: 800;
+            color: var(--green);
+            margin-bottom: .8rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .score-bar-bg {
+            flex: 1;
+            max-width: 100px;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: var(--green);
+            transition: width .5s;
+        }
+
+        .reco-items {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+
+        .reco-items li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .5rem 0;
+            border-bottom: 1px dashed #f0f0f0;
+            font-size: .85rem;
+        }
+
+        .reco-items li:last-child { border-bottom: none; }
+
+        .item-name {
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .item-meta {
+            font-size: .75rem;
+            color: var(--gray);
+        }
+
+        .item-price {
+            background: var(--green-light);
+            color: var(--green);
+            border-radius: 8px;
+            padding: .15rem .5rem;
+            font-size: .78rem;
+            font-weight: 800;
+        }
+
+        .reco-totals {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 800;
+            font-size: .82rem;
+            padding-top: .8rem;
+            border-top: 2px solid #f0f0f0;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .reco-totals span { color: var(--dark); }
+
         .reco-select-btn {
             width: 100%;
             background: #f3f4f6;
@@ -1800,13 +1892,126 @@
             padding: .6rem;
             font-weight: 700;
             font-size: .85rem;
-            margin-top: 1rem;
+            cursor: pointer;
             transition: all .2s;
+            font-family: 'Nunito', sans-serif;
         }
 
-        .reco-card:hover .reco-select-btn {
+        .reco-card:hover .reco-select-btn,
+        .reco-card.best .reco-select-btn {
             background: var(--green);
             color: white;
+        }
+
+        /* Protein Addons */
+        .protein-addons {
+            max-width: 1000px;
+            width: 100%;
+            background: var(--orange-light);
+            border: 2px solid rgba(244, 162, 97, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .protein-addons h4 {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #b45309;
+            margin-bottom: .3rem;
+        }
+
+        .protein-addons .gap-text {
+            font-size: .85rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .addon-chips {
+            display: flex;
+            gap: .6rem;
+            flex-wrap: wrap;
+        }
+
+        .addon-chip {
+            background: white;
+            border: 1.5px solid rgba(244, 162, 97, 0.4);
+            border-radius: 12px;
+            padding: .6rem 1rem;
+            font-size: .82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            flex-direction: column;
+            gap: .2rem;
+        }
+
+        .addon-chip:hover {
+            border-color: var(--orange);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 162, 97, 0.15);
+        }
+
+        .addon-chip .addon-name { color: var(--dark); }
+        .addon-chip .addon-meta { font-size: .72rem; color: var(--gray); }
+        .addon-chip .addon-ratio {
+            font-size: .68rem;
+            color: var(--green);
+            font-weight: 800;
+        }
+
+        /* Validation Bar */
+        .validation-bar {
+            max-width: 1000px;
+            width: 100%;
+            background: var(--green-light);
+            border: 2px solid rgba(58, 125, 68, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .val-item-reco { text-align: center; }
+
+        .val-item-reco .val-label {
+            font-size: .72rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: .5px;
+        }
+
+        .val-item-reco .val-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--green);
+        }
+
+        .val-item-reco .val-value.warn { color: var(--orange); }
+
+        .reco-divider {
+            width: 100%;
+            max-width: 1000px;
+            height: 1px;
+            background: #e5e7eb;
+            margin: 1.5rem 0;
+        }
+
+        .reco-section-label {
+            font-size: .75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray);
+            align-self: flex-start;
+            max-width: 1000px;
+            width: 100%;
+            margin-bottom: .5rem;
         }
     </style>
 </head>
@@ -2134,11 +2339,21 @@
             onmouseout="this.style.background='var(--green-light)';this.style.color='var(--green)'">← Back</button>
         <h2 style="font-size:2rem;color:var(--dark);">🥗 Personalized For You</h2>
         <p style="color:var(--gray);max-width:600px;">Based on your goal to <strong><span id="recoGoalText">gain
-                    weight</span></strong> and budget of <strong>₹<span id="recoBudgetText">200</span></strong>, we
-            recommend starting with one of these plans:</p>
+                    weight</span></strong> and budget of <strong>₹<span id="recoBudgetText">200</span></strong>, here are your smartest picks for <strong><span id="recoMealText">breakfast</span></strong>:</p>
 
+        <div class="reco-section-label">🎯 Recommended Plans</div>
         <div class="reco-grid" id="recoGrid">
             <!-- Cards generated by JS -->
+        </div>
+
+        <div class="reco-divider"></div>
+        <div class="reco-section-label">⚡ Quick Validation</div>
+        <div class="validation-bar" id="recoValidation">
+            <!-- Populated by JS -->
+        </div>
+
+        <div id="proteinAddonsSection">
+            <!-- Populated by JS when protein gap detected -->
         </div>
 
         <button onclick="skipRecommendations()"
@@ -2614,73 +2829,276 @@
         }
 
         let currentRecommendations = [];
+
+        // ===== SCORING ENGINE =====
+        function scoreRecipe(recipe, weights, proteinTarget, calTarget, budget, usedNames) {
+            let score = 0;
+
+            // Protein score (0-40 default)
+            const proPer = proteinTarget > 0 ? Math.min(1, recipe.pro / proteinTarget) : 0.5;
+            score += proPer * weights.protein;
+
+            // Calorie score (0-25 default)
+            const calDiff = Math.abs(recipe.cal - calTarget);
+            const calScore = Math.max(0, 1 - (calDiff / calTarget));
+            score += calScore * weights.calories;
+
+            // Budget score (0-20 default)
+            if (budget > 0) {
+                const budgetScore = Math.max(0, 1 - (recipe.price / budget));
+                score += budgetScore * weights.budget;
+            }
+
+            // Variety score (0-15 default)
+            const nameKey = recipe.name.toLowerCase().split(' ')[0];
+            const varietyPenalty = usedNames.has(nameKey) ? 0 : 1;
+            score += varietyPenalty * weights.variety;
+
+            return Math.round(score);
+        }
+
+        function buildMergedPool() {
+            // Start with the 56-item foods array
+            const merged = foods.map(f => ({
+                name: f.name, cat: f.cat, diet: f.diet, price: f.price || 0,
+                cal: f.cal, pro: f.pro, fat: f.fat || 0, carb: f.carb || 0,
+                meal: f.meal, free: f.free || false, source: 'foods'
+            }));
+
+            // Add RECIPE_DB entries (normalized field names)
+            if (typeof RECIPE_DB !== 'undefined') {
+                RECIPE_DB.forEach(r => {
+                    // Skip if we already have it from foods array
+                    if (merged.some(m => m.name.toLowerCase() === r.name.toLowerCase())) return;
+                    merged.push({
+                        name: r.name, cat: r.cat || 'Main Course', diet: r.diet,
+                        price: r.price || 40, cal: r.cal || r.calories || 250,
+                        pro: r.pro || r.protein || 6, fat: r.fat || 8, carb: r.carbs || r.carb || 30,
+                        meal: r.meal || [], free: false, source: 'recipe_db'
+                    });
+                });
+            }
+            return merged;
+        }
+
         function generateRecommendations() {
             const grid = document.getElementById('recoGrid');
             document.getElementById('recoGoalText').innerText = userPrefs.goal;
             document.getElementById('recoBudgetText').innerText = userPrefs.budget;
+            document.getElementById('recoMealText').innerText = userPrefs.mealType;
 
             // Update main planner's active meal to match preference
             switchMeal(userPrefs.mealType);
 
-            // Filter foods by diet and selected meal type
-            const pool = foods.filter(f => {
-                const matchesDiet = userPrefs.diet === 'veg' ? f.diet === 'veg' :
-                    userPrefs.diet === 'egg' ? (f.diet === 'veg' || f.diet === 'egg') : true;
-                const matchesMeal = f.meal.includes(userPrefs.mealType);
-                return matchesDiet && matchesMeal;
+            // Step 1: Merge pools
+            const allRecipes = buildMergedPool();
+
+            // Step 2: Hard filter
+            const budget = userPrefs.budget;
+            const candidates = allRecipes.filter(r => {
+                // Diet filter
+                const matchesDiet = userPrefs.diet === 'veg' ? r.diet === 'veg' :
+                    userPrefs.diet === 'egg' ? (r.diet === 'veg' || r.diet === 'egg') : true;
+                // Meal filter
+                const matchesMeal = r.meal.includes(userPrefs.mealType);
+                // Price ceiling (30% buffer)
+                const withinBudget = r.price <= budget * 1.3;
+                return matchesDiet && matchesMeal && withinBudget;
             });
 
-            // If for some reason we have no foods (shouldn't happen with current DB), use all meal matches
-            const safePool = pool.length > 0 ? pool : foods.filter(f => f.meal.includes(userPrefs.mealType));
+            // Calculate targets
+            const weight = userPrefs.weight || 60;
+            const goalMultiplier = userPrefs.goal === 'gain' ? 2.0 : userPrefs.goal === 'lose' ? 1.2 : 1.6;
+            const dailyProtein = Math.round(weight * goalMultiplier);
+            const perMealProtein = Math.round(dailyProtein / 3);
 
-            // Helper to pick diverse items within budget
-            const pickItems = (count, filterFn) => {
-                const filtered = safePool.filter(filterFn);
-                // Shuffle for variety
-                return [...filtered].sort(() => 0.5 - Math.random()).slice(0, count);
+            const dailyCal = userPrefs.goal === 'gain' ? 2500 : userPrefs.goal === 'lose' ? 1600 : 2000;
+            const perMealCal = Math.round(dailyCal / 3);
+
+            // Step 3: Score with different weight profiles
+            const defaultWeights = { protein: 40, calories: 25, budget: 20, variety: 15 };
+            const budgetWeights = { protein: 20, calories: 15, budget: 50, variety: 15 };
+            const proteinWeights = { protein: 60, calories: 10, budget: 15, variety: 15 };
+
+            function pickTopPlan(weights, count) {
+                const usedNames = new Set();
+                const scored = candidates.map(r => ({
+                    ...r,
+                    score: scoreRecipe(r, weights, perMealProtein, perMealCal, budget, usedNames)
+                })).sort((a, b) => b.score - a.score);
+
+                const picked = [];
+                const pickedNames = new Set();
+                let totalCost = 0;
+                for (const r of scored) {
+                    const nameKey = r.name.toLowerCase().split(' ')[0];
+                    if (pickedNames.has(nameKey)) continue;
+                    if (totalCost + r.price > budget && picked.length > 0) continue;
+                    picked.push(r);
+                    pickedNames.add(nameKey);
+                    totalCost += r.price;
+                    if (picked.length >= count) break;
+                }
+                return picked;
+            }
+
+            // Generate 3 themed plans
+            const bestItems = pickTopPlan(defaultWeights, 3);
+            const budgetItems = pickTopPlan(budgetWeights, 3);
+            const proteinItems = pickTopPlan(proteinWeights, 3);
+
+            const calcPlanScore = (items) => {
+                if (items.length === 0) return 0;
+                const avgScore = items.reduce((s, i) => s + (i.score || 0), 0) / items.length;
+                return Math.round(Math.min(99, Math.max(30, avgScore)));
             };
 
-            const budgetLimit = userPrefs.budget * 0.9; // Leave some buffer
-
-            // Plan 1: Economy Plan (low cost, staple focused)
-            const lowCostItems = pickItems(3, f => f.price <= 25);
-            const economyPlan = {
-                title: "💰 Economy Plan",
-                items: lowCostItems,
-                tag: "Budget Friendly"
-            };
-
-            // Plan 2: Balanced Plan (mix of categories)
-            const balancedItems = [
-                ...pickItems(1, f => f.cat === 'Staple' || f.cat === 'Breakfast'),
-                ...pickItems(1, f => f.cat === 'Protein' || f.cat === 'Dairy'),
-                ...pickItems(1, f => f.cat === 'Veggie' || f.cat === 'Snack')
+            const plans = [
+                { title: '🏆 Best Match', tag: '⭐ Top Pick', items: bestItems, score: calcPlanScore(bestItems), best: true },
+                { title: '💰 Budget Saver', tag: 'Budget Friendly', items: budgetItems, score: calcPlanScore(budgetItems), best: false },
+                { title: '💪 Protein Power', tag: 'Fitness Goal', items: proteinItems, score: calcPlanScore(proteinItems), best: false }
             ];
-            const balancedPlan = {
-                title: "⚖️ Balanced Mix",
-                items: balancedItems.filter(i => i), // remove nulls 
-                tag: "Most Popular"
-            };
 
-            // Plan 3: Protein Boost (focused on higher protein items)
-            const proteinItems = pickItems(3, f => f.pro >= 8);
-            const proteinPlan = {
-                title: "🥩 Protein Boost",
-                items: proteinItems,
-                tag: "Fitness Goal"
-            };
+            currentRecommendations = plans;
 
-            currentRecommendations = [economyPlan, balancedPlan, proteinPlan];
+            // Render cards
+            grid.innerHTML = plans.map((p, i) => {
+                const totalCost = p.items.reduce((s, f) => s + f.price, 0);
+                const totalCal = Math.round(p.items.reduce((s, f) => s + f.cal, 0));
+                const totalPro = Math.round(p.items.reduce((s, f) => s + f.pro, 0));
 
-            grid.innerHTML = currentRecommendations.map((p, i) => `
-                <div class="reco-card" onclick="selectRecommendation(${i})">
+                const itemsHtml = p.items.map(it => `
+                    <li>
+                        <div>
+                            <div class="item-name">✅ ${it.name}</div>
+                            <div class="item-meta">${it.cal} kcal · ${it.pro}g protein</div>
+                        </div>
+                        <span class="item-price">${it.free ? 'FREE' : '₹' + it.price}</span>
+                    </li>`).join('');
+
+                return `
+                <div class="reco-card ${p.best ? 'best' : ''}" onclick="selectRecommendation(${i})">
                     <span class="reco-badge">${p.tag}</span>
                     <h4>${p.title}</h4>
-                    <p style="font-size:.8rem;color:var(--gray);margin-bottom:.8rem;">Total: ₹${p.items.reduce((s, f) => s + f.price, 0)} · ${Math.round(p.items.reduce((s, f) => s + f.cal, 0))} kcal</p>
-                    <ul>${p.items.map(it => `<li>✅ ${it.name}</li>`).join('')}</ul>
+                    <div class="reco-score">
+                        Score: ${p.score}/100
+                        <div class="score-bar-bg"><div class="score-bar" style="width:${p.score}%"></div></div>
+                    </div>
+                    <ul class="reco-items">${itemsHtml}</ul>
+                    <div class="reco-totals">
+                        <div>💰 <span>₹${totalCost}</span></div>
+                        <div>🔥 <span>${totalCal} kcal</span></div>
+                        <div>💪 <span>${totalPro}g pro</span></div>
+                    </div>
                     <button class="reco-select-btn">Select This Plan</button>
-                </div>`).join('');
+                </div>`;
+            }).join('');
+
+            // Show validation for the best plan by default
+            updateRecoValidation(plans[0]);
+
+            // Show protein addons if needed
+            suggestProteinAddons(plans[0]);
+
             document.getElementById('recoOverlay').classList.add('active');
+        }
+
+        // ===== VALIDATION DISPLAY =====
+        function updateRecoValidation(plan) {
+            const totalCal = Math.round(plan.items.reduce((s, f) => s + f.cal, 0));
+            const totalPro = Math.round(plan.items.reduce((s, f) => s + f.pro, 0));
+            const totalCost = plan.items.reduce((s, f) => s + f.price, 0);
+
+            const weight = userPrefs.weight || 60;
+            const goalMult = userPrefs.goal === 'gain' ? 2.0 : userPrefs.goal === 'lose' ? 1.2 : 1.6;
+            const dailyPro = Math.round(weight * goalMult);
+            const perMealPro = Math.round(dailyPro / 3);
+            const dailyCal = userPrefs.goal === 'gain' ? 2500 : userPrefs.goal === 'lose' ? 1600 : 2000;
+            const perMealCal = Math.round(dailyCal / 3);
+
+            const calStatus = totalCal < perMealCal * 0.7 ? 'warn' : '';
+            const proStatus = totalPro < perMealPro * 0.7 ? 'warn' : '';
+            const budgetPct = Math.round((totalCost / userPrefs.budget) * 100);
+
+            let statusText = '✅ Looks Good';
+            let statusClass = '';
+            if (totalPro < perMealPro * 0.7) { statusText = '⚠️ Low Protein'; statusClass = 'warn'; }
+            else if (totalCal < perMealCal * 0.6) { statusText = '⚠️ Low Calories'; statusClass = 'warn'; }
+            else if (totalCost > userPrefs.budget) { statusText = '⚠️ Over Budget'; statusClass = 'warn'; }
+
+            document.getElementById('recoValidation').innerHTML = `
+                <div class="val-item-reco">
+                    <div class="val-label">Calories</div>
+                    <div class="val-value ${calStatus}">${totalCal} kcal</div>
+                </div>
+                <div class="val-item-reco">
+                    <div class="val-label">Protein</div>
+                    <div class="val-value ${proStatus}">${totalPro}g / ${perMealPro}g</div>
+                </div>
+                <div class="val-item-reco">
+                    <div class="val-label">Budget Used</div>
+                    <div class="val-value">₹${totalCost} / ₹${userPrefs.budget}</div>
+                </div>
+                <div class="val-item-reco">
+                    <div class="val-label">Status</div>
+                    <div class="val-value ${statusClass}">${statusText}</div>
+                </div>`;
+        }
+
+        // ===== PROTEIN ADDON SUGGESTIONS =====
+        function suggestProteinAddons(plan) {
+            const section = document.getElementById('proteinAddonsSection');
+            const totalPro = Math.round(plan.items.reduce((s, f) => s + f.pro, 0));
+            const totalCost = plan.items.reduce((s, f) => s + f.price, 0);
+            const weight = userPrefs.weight || 60;
+            const goalMult = userPrefs.goal === 'gain' ? 2.0 : userPrefs.goal === 'lose' ? 1.2 : 1.6;
+            const perMealPro = Math.round((weight * goalMult) / 3);
+            const gap = perMealPro - totalPro;
+            const remainingBudget = userPrefs.budget - totalCost;
+
+            if (gap <= 3 || remainingBudget <= 5) {
+                section.innerHTML = '';
+                return;
+            }
+
+            // Find protein-rich items that fit diet and remaining budget
+            const boosters = foods
+                .filter(f => {
+                    const matchesDiet = userPrefs.diet === 'veg' ? f.diet === 'veg' :
+                        userPrefs.diet === 'egg' ? (f.diet === 'veg' || f.diet === 'egg') : true;
+                    return matchesDiet && f.pro >= 5 && f.price <= remainingBudget && f.price > 0;
+                })
+                .map(f => ({ ...f, ratio: Math.round((f.pro / f.price) * 100) / 100 }))
+                .sort((a, b) => b.ratio - a.ratio)
+                .slice(0, 5);
+
+            if (boosters.length === 0) { section.innerHTML = ''; return; }
+
+            const bestIdx = 0;
+            section.innerHTML = `
+                <div class="reco-divider"></div>
+                <div class="reco-section-label">⚡ Protein Boosters — Fill the gap!</div>
+                <div class="protein-addons">
+                    <h4>⚡ You're ~${gap}g short on protein for this meal</h4>
+                    <p class="gap-text">Add any of these affordable boosters to hit your target. Sorted by best protein-per-rupee:</p>
+                    <div class="addon-chips">
+                        ${boosters.map((b, i) => `
+                            <div class="addon-chip" onclick="addAddonToFirstPlan('${b.name.replace(/'/g, "\\'")}')"> 
+                                <span class="addon-name">${b.name}</span>
+                                <span class="addon-meta">${b.pro}g protein · ₹${b.price}</span>
+                                <span class="addon-ratio">${i === bestIdx ? '🏅 ' : ''}${b.ratio}g protein/₹${i === bestIdx ? ' — Best value!' : ''}</span>
+                            </div>`).join('')}
+                    </div>
+                </div>`;
+        }
+
+        function addAddonToFirstPlan(foodName) {
+            const item = foods.find(f => f.name === foodName);
+            if (!item || currentRecommendations.length === 0) return;
+            // Add to the best plan (first one)
+            currentRecommendations[0].items.push({ ...item });
+            // Re-render
+            generateRecommendations();
         }
 
         function selectRecommendation(idx) {
@@ -2693,7 +3111,7 @@
 
             const toast = document.createElement('div');
             toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--green);color:white;padding:15px 25px;border-radius:50px;font-weight:800;z-index:10000;animation:slideDown 0.5s ease;';
-            toast.innerHTML = `🚀 Plan Started! You can now add more items or search 6000+ recipes below.`;
+            toast.innerHTML = `🚀 Plan Started! Score: ${plan.score}/100 — Add more items or search 6000+ recipes below.`;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
